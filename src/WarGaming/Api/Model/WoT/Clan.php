@@ -1,0 +1,125 @@
+<?php
+
+/**
+ * This file is part of the WarGaming API package
+ *
+ * (c) Vitaliy Zhuk
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code
+ */
+
+namespace WarGaming\Api\Model\WoT;
+
+use WarGaming\Api\Annotation\Id;
+use WarGaming\Api\Util\DateTime;
+
+/**
+ * Clan model
+ *
+ * @author Vitaliy Zhuk <zhuk2205@gmail.com>
+ */
+class Clan
+{
+    /**
+     * @var integer
+     *
+     * @Id
+     */
+    public $id;
+
+    /**
+     * @var string
+     */
+    public $abbreviation;
+
+    /**
+     * @var string
+     */
+    public $name;
+
+    /**
+     * @var bool
+     */
+    public $isClanDisbanded;
+
+    /**
+     * @var string
+     */
+    public $motto;
+
+    /**
+     * @var string
+     */
+    public $color;
+
+    /**
+     * @var \DateTime
+     */
+    public $createdAt;
+
+    /**
+     * @var \DateTime
+     */
+    public $updatedAt;
+
+    /**
+     * @var string
+     */
+    public $description;
+
+    /**
+     * @var string
+     */
+    public $descriptionHtml;
+
+    /**
+     * @var array|Account[]
+     */
+    public $members = array();
+
+    /**
+     * Create new instance from array
+     *
+     * @param array $data
+     *
+     * @return Clan
+     */
+    public static function createFromArray(array $data)
+    {
+        /** @var Clan $clan */
+        $clan = new static();
+
+        $clan->id = isset($data['clan_id']) ? $data['clan_id'] : null;
+
+        return $clan;
+    }
+
+    /**
+     * Set full data to instance with array
+     *
+     * @param array $data
+     */
+    public function setFullDataFromArray(array $data)
+    {
+        $this->name = isset($data['name']) ? $data['name'] : null;
+        $this->abbreviation = isset($data['abbreviation']) ? $data['abbreviation'] : null;
+        $this->isClanDisbanded = isset($data['is_clan_disbanded']) ? (bool) $data['is_clan_disbanded'] : null;
+        $this->motto = isset($data['motto']) ? $data['motto'] : null;
+        $this->color = isset($data['color']) ? $data['color'] : null;
+        $this->description = isset($data['description']) ? $data['description'] : null;
+        $this->descriptionHtml = isset($data['description_html']) ? $data['description_html'] : null;
+
+        // Datetime objects
+        $this->createdAt = isset($data['created_at']) ? DateTime::dateTimeFromTimestamp($data['created_at']) : null;
+        $this->updatedAt = isset($data['updated_at']) ? DateTime::dateTimeFromTimestamp($data['updated_at']) : null;
+
+        // Grouping members
+        $this->members = array();
+        if (isset($data['members'])) {
+            foreach ($data['members'] as $memberInfo) {
+                $this->members[] = Account::createFromArray($memberInfo);
+            }
+        }
+    }
+}

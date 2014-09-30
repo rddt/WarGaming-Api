@@ -1,0 +1,10 @@
+# Composer files
+/composer.phar
+/composer.lock
+/vendor/
+
+# Other files
+/.idea/
+/var/
+/test.php
+/atlassian-ide-plugin.xml

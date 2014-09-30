@@ -1,0 +1,26 @@
+{
+    "name": "wargaming/api",
+    "description": "WarGaming API client",
+    "keywords": ["wargaming", "war", "game", "wot", "world of tanks", "api"],
+    "homepage": "https://github.com/ZhukV/WarGaming-Api",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vitaliy Zhuk",
+            "email": "zhuk2205@gmail.com"
+        }
+    ],
+
+    "require": {
+        "php": ">=5.3.3",
+        "symfony/validator": "~2.5",
+        "symfony/filesystem": "~2.5",
+        "doctrine/annotations": "1.2.1",
+        "guzzle/guzzle": "3.9.2"
+    },
+
+    "autoload": {
+        "psr-0": { "WarGaming\\Api": "src/" }
+    }
+}
