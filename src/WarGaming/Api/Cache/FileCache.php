@@ -70,7 +70,7 @@ class FileCache implements CacheInterface
             $this->filesystem->mkdir($directory);
         }
 
-        file_put_contents($filePath, serialize($cache));
+        return file_put_contents($filePath, serialize($cache));
     }
 
     /**
@@ -84,6 +84,8 @@ class FileCache implements CacheInterface
     {
         $filePath = $this->generateFilePath($key);
         $this->filesystem->remove($filePath);
+
+        return true;
     }
 
     /**

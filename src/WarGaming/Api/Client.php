@@ -18,6 +18,7 @@ use Guzzle\Http\Exception\BadResponseException;
 use Guzzle\Http\Message\EntityEnclosingRequestInterface;
 use Guzzle\Http\Message\RequestInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use WarGaming\Api\Cache\ArrayCache;
 use WarGaming\Api\Cache\CacheInterface;
 use WarGaming\Api\Exception\ExceptionFactory;
 use WarGaming\Api\FormData\FormDataGenerator;
@@ -396,7 +397,11 @@ class Client
         $eventDispatcher = new EventDispatcher();
         $formDataGenerator = new FormDataGenerator($reader);
 
-        return new static($guzzle, $validator, $eventDispatcher, $formDataGenerator);
+        /** @var Client $client */
+        $client = new static($guzzle, $validator, $eventDispatcher, $formDataGenerator);
+        $client->setCache(new ArrayCache());
+
+        return $client;
     }
 
     /**
