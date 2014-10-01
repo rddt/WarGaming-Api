@@ -13,7 +13,6 @@ namespace WarGaming\Api\Method\WoT\Clan;
 
 use Symfony\Component\Validator\Constraints as Assert;
 use WarGaming\Api\Annotation\FormData;
-use WarGaming\Api\Annotation\CollectionLoad;
 use WarGaming\Api\Method\AbstractMethod;
 use WarGaming\Api\Model\WoT\Clan;
 
