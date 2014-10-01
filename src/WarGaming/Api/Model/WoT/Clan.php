@@ -81,7 +81,7 @@ class Clan
     /**
      * @var array|Province[]
      */
-    private $provinces = array();
+    public $provinces = array();
 
     /**
      * Create new instance from array
