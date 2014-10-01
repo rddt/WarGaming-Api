@@ -35,7 +35,7 @@ class Tanks extends AbstractMethod
      *      @Assert\Type("WarGaming\Api\Model\WoT\Account")
      * })
      *
-     * @FormData(name="account_id", type="list")
+     * @FormData(name="account_id", type="list", collectionLoad=true)
      */
     public $accounts;
 
