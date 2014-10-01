@@ -6,7 +6,7 @@ With this client your can work [WarGaming API](https://ru.wargaming.net/develope
 Installation
 ------------
 
-Add AppleApnPush in your composer.json:
+Add WarGaming API in your composer.json:
 
 ```js
 {
