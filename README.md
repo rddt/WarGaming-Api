@@ -22,6 +22,13 @@ Now tell composer to download the library by running the command:
 $ php composer.phar update wargaming/api
 ```
 
+Documentation
+-------------
+
+The bulk of the documentation is stored in the `doc/index.md` file in this library:
+
+[Read the Documentation](doc/index.md)
+
 License
 -------
 

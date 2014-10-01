@@ -14,7 +14,7 @@ namespace WarGaming\Api;
 use WarGaming\Api\Method\PagerMethodInterface;
 
 /**
- * Full load data with pagination
+ * Load data from all pages.
  *
  * @author Vitaliy Zhuk <zhuk2205@gmail.com>
  */

@@ -25,4 +25,6 @@ class FormData
     public $name;
     /** @var string */
     public $type;
+    /** @var bool */
+    public $collectionLoad = false;
 }

@@ -12,7 +12,7 @@
 namespace WarGaming\Api\FormData;
 
 use Doctrine\Common\Annotations\Reader;
-use Doctrine\Common\Collections\Collection;
+use WarGaming\Api\Util\ReflectionHelper;
 
 /**
  * Form data generator
@@ -54,7 +54,7 @@ class FormDataGenerator implements FormDataGeneratorInterface
 
         $reflectionModel = new \ReflectionObject($model);
 
-        $properties = $this->getProperties($reflectionModel);
+        $properties = ReflectionHelper::getProperties($reflectionModel);
 
         $formData = array();
 
@@ -104,24 +104,6 @@ class FormDataGenerator implements FormDataGeneratorInterface
     }
 
     /**
-     * Get properties from model
-     *
-     * @param \ReflectionObject $object
-     *
-     * @return array|\ReflectionProperty[]
-     */
-    private function getProperties(\ReflectionObject $object)
-    {
-        $properties = $object->getProperties();
-
-        while ($object = $object->getParentClass()) {
-            $properties = array_merge($properties, $object->getProperties());
-        }
-
-        return $properties;
-    }
-
-    /**
      * Get identifier value from object
      *
      * @param object $object
@@ -130,7 +112,7 @@ class FormDataGenerator implements FormDataGeneratorInterface
     private function getIdentifierValue($object)
     {
         $reflection = new \ReflectionObject($object);
-        $properties = $this->getProperties($reflection);
+        $properties = ReflectionHelper::getProperties($reflection);
 
         foreach ($properties as $property) {
             $annotation = $this->reader->getPropertyAnnotation($property, 'WarGaming\Api\Annotation\Id');
