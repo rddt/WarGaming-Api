@@ -130,7 +130,7 @@ class FormDataGenerator implements FormDataGeneratorInterface
     private function getIdentifierValue($object)
     {
         $reflection = new \ReflectionObject($object);
-        $properties = $reflection->getProperties();
+        $properties = $this->getProperties($reflection);
 
         foreach ($properties as $property) {
             $annotation = $this->reader->getPropertyAnnotation($property, 'WarGaming\Api\Annotation\Id');

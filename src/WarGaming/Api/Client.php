@@ -103,8 +103,7 @@ class Client
         FormDataGeneratorInterface $formDataGenerator,
         $apiHost = null,
         $apiSecure = true
-    )
-    {
+    ) {
         $this->httpClient = $httpClient;
         $this->validator = $validator;
         $this->eventDispatcher = $eventDispatcher;
@@ -253,6 +252,8 @@ class Client
             $requestResponse = $this->processRequest($httpRequest);
         }
 
+        $this->dispatch(Events::REQUEST_COMPLETE, new Events\RequestCompleteEvent($httpRequest, $requestResponse));
+
         $json = $requestResponse->json();
 
         if (empty($json['status'])) {
@@ -265,7 +266,7 @@ class Client
             }
 
             throw ExceptionFactory::requestErrorFromWarGamingResponse($json['error']);
-        } else if ($json['status'] == 'ok') {
+        } elseif ($json['status'] == 'ok') {
             if (empty($json['data'])) {
                 throw ExceptionFactory::missingKeyInResponse('data');
             }
@@ -298,7 +299,6 @@ class Client
         // Sending request
         try {
             $requestResponse = $this->httpClient->send($httpRequest);
-            $this->dispatch(Events::REQUEST_COMPLETE, new Events\RequestCompleteEvent($httpRequest, $requestResponse));
 
         } catch (BadResponseException $e) {
             $this->dispatch(Events::REQUEST_ERROR, new Events\RequestErrorEvent($e));

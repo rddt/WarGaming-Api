@@ -9,26 +9,26 @@
  * file that was distributed with this source code
  */
 
-namespace WarGaming\Api\Method\WoT\GlobalWar;
+namespace WarGaming\Api\Method\WoT\Account;
 
 use Guzzle\Http\Message\Response as GuzzleResponse;
 use WarGaming\Api\Method\AbstractProcessor;
 use WarGaming\Api\Method\MethodInterface;
-use WarGaming\Api\Model\WoT\Clan;
+use WarGaming\Api\Model\WoT\AccountTank;
 
 /**
- * Get clans API processor
+ * Account tank processor
  *
  * @author Vitaliy Zhuk <zhuk2205@gmail.com>
  */
-class ClansProcessor extends AbstractProcessor
+class TanksProcessor extends AbstractProcessor
 {
     /**
      * {@inheritDoc}
      */
     protected function getApiUri()
     {
-        return 'wot/globalwar/clans';
+        return 'wot/account/tanks';
     }
 
     /**
@@ -36,12 +36,14 @@ class ClansProcessor extends AbstractProcessor
      */
     public function parseResponse(array $data, array $fullData, GuzzleResponse $response, MethodInterface $method)
     {
-        $clans = array();
-
-        foreach ($data as $info) {
-            $clans[] = Clan::createFromArray($info);
+        /** @var Tanks $method */
+        foreach ($method->accounts as $account) {
+            if (!empty($data[$account->id])) {
+                foreach ($data[$account->id] as $accountTankInfo) {
+                    $accountTank = AccountTank::createFromArray($accountTankInfo);
+                    $account->tanks[] = $accountTank;
+                }
+            }
         }
-
-        return $clans;
     }
 }

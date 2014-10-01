@@ -9,32 +9,39 @@
  * file that was distributed with this source code
  */
 
-namespace WarGaming\Api\Method\WoT\GlobalWar;
+namespace WarGaming\Api\Method\WoT\Encyclopedia;
 
 use Symfony\Component\Validator\Constraints as Assert;
 use WarGaming\Api\Annotation\FormData;
-use WarGaming\Api\Method\AbstractPagerMethod;
+use WarGaming\Api\Method\AbstractMethod;
 
 /**
- * Get clans from global
+ * Tank info API
  *
  * @author Vitaliy Zhuk <zhuk2205@gmail.com>
  */
-class Clans extends AbstractPagerMethod
+class TankInfo extends AbstractMethod
 {
     /**
-     * @var integer
+     * @var array|\WarGaming\Api\Model\WoT\Tank\Tank[]
      *
-     * @Assert\NotBlank
+     * @Assert\Type("array")
+     * @Assert\Count(
+     *      min = 1,
+     *      max = 100
+     * )
+     * @Assert\All({
+     *      @Assert\Type("WarGaming\Api\Model\WoT\Tank\Tank")
+     * })
      *
-     * @FormData(name="map_id")
+     * @FormData(name="tank_id", type="list")
      */
-    public $map;
+    public $tanks = array();
 
     /**
      * @var int
      */
-    public $cacheTtl = 7200;
+    public $cacheTtl = 86400; // 1 day
 
     /**
      * {@inheritDoc}

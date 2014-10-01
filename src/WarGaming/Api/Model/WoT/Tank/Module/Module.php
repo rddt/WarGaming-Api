@@ -9,13 +9,21 @@
  * file that was distributed with this source code
  */
 
-namespace WarGaming\Api\Exception;
+namespace WarGaming\Api\Model\WoT\Tank\Module;
+
+use WarGaming\Api\Annotation\Id;
 
 /**
- * Missing required key
+ * Abstract layer for module
  *
  * @author Vitaliy Zhuk <zhuk2205@gmail.com>
  */
-class MissingKeyException extends Exception
+abstract class Module
 {
+    /**
+     * @var int
+     *
+     * @Id
+     */
+    public $id;
 }

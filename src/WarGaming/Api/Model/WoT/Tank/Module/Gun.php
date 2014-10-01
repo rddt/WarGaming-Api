@@ -9,13 +9,13 @@
  * file that was distributed with this source code
  */
 
-namespace WarGaming\Api\Exception;
+namespace WarGaming\Api\Model\WoT\Tank\Module;
 
 /**
- * Missing required key
+ * Tank gun module
  *
  * @author Vitaliy Zhuk <zhuk2205@gmail.com>
  */
-class MissingKeyException extends Exception
+class Gun extends Module
 {
 }

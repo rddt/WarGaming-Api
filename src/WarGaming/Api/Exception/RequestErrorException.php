@@ -119,27 +119,26 @@ class RequestErrorException extends Exception
                         $code = self::APPLICATION_IS_BLOCKED;
                         $message = 'Application is blocked.';
 
-                    } else if ($errorInfo['message'] == 'INVALID_APPLICATION_ID') {
+                    } elseif ($errorInfo['message'] == 'INVALID_APPLICATION_ID') {
                         $code = self::APPLICATION_ID_INVALID;
                         $message = 'Invalid Application ID.';
 
-                    } else if ($errorInfo['message'] == 'INVALID_IP_ADDRESS') {
+                    } elseif ($errorInfo['message'] == 'INVALID_IP_ADDRESS') {
                         $code = self::INVALID_IP_ADDRESS;
                         $message = 'Invalid IP Address.';
 
-                    } else if ($errorInfo['message'] == 'REQUEST_LIMIT_EXCEEDED') {
+                    } elseif ($errorInfo['message'] == 'REQUEST_LIMIT_EXCEEDED') {
                         $code = self::REQUEST_LIMIT_EXCEEDED;
                         $message = 'Request limit exceeded.';
 
-                    } else if ($errorInfo['message'] == 'NOT_ENOUGH_SEARCH_LENGTH') {
+                    } elseif ($errorInfo['message'] == 'NOT_ENOUGH_SEARCH_LENGTH') {
                         $code = self::SEARCH_LENGTH_NOT_ENOUGH;
                         $message = 'Not enough search length.';
 
-                    } else if ($errorInfo['message'] == 'INVALID_PAGE_NO') {
+                    } elseif ($errorInfo['message'] == 'INVALID_PAGE_NO') {
                         $code = self::PAGE_NUMBER_INVALID;
                         $message = 'Invalid page number parameter.';
-
-                    } else if (strpos($errorInfo['message'], 'INVALID_') === 0) {
+                    } elseif (strpos($errorInfo['message'], 'INVALID_') === 0) {
                         $code = self::FIELD_INVALID;
                         $message = sprintf(
                             'The value "%s" for field "%s" is invalid.',
@@ -147,9 +146,9 @@ class RequestErrorException extends Exception
                             $errorInfo['field']
                         );
 
-                    } else if (strpos($errorInfo['message'], '_LIST_LIMIT_EXCEEDED') !== false) {
+                    } elseif (strpos($errorInfo['message'], '_LIST_LIMIT_EXCEEDED') !== false) {
                         $code = self::FIELD_LIST_LIMIT_EXCEEDED;
-                        $message = 'Field list limit exceeded.';
+                        $message = sprintf('Field list "%s" limit exceeded.', $errorInfo['field']);
 
                     }
 

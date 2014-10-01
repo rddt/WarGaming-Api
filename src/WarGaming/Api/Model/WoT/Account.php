@@ -44,6 +44,27 @@ class Account
     public $role;
 
     /**
+     * @var array|AccountTank[]
+     */
+    public $tanks = array();
+
+    /**
+     * Get tanks instances
+     *
+     * @return array|Tank\Tank[]
+     */
+    public function getTankInstances()
+    {
+        $tankObjects = array();
+
+        foreach ($this->tanks as $tank) {
+            $tankObjects[] = $tank->tank;
+        }
+
+        return $tankObjects;
+    }
+
+    /**
      * Create instance from array
      *
      * @param array $data
