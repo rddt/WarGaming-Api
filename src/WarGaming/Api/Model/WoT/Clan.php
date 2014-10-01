@@ -79,6 +79,11 @@ class Clan
     public $members = array();
 
     /**
+     * @var array|Province[]
+     */
+    private $provinces = array();
+
+    /**
      * Create new instance from array
      *
      * @param array $data
@@ -91,6 +96,13 @@ class Clan
         $clan = new static();
 
         $clan->id = isset($data['clan_id']) ? $data['clan_id'] : null;
+
+        $clan->provinces = array();
+        if (!empty($data['provinces'])) {
+            foreach ($data['provinces'] as $provinceInfo) {
+                $clan->provinces[] = Province::createFromArray($provinceInfo);
+            }
+        }
 
         return $clan;
     }

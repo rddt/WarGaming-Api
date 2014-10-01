@@ -407,6 +407,9 @@ class Client
     /**
      * Generate cache key via request
      *
+     * @todo: can modify hash via lifetime? Because if one request has lifetime 1 hour,
+     * and another similar requests have 2 hour.
+     *
      * @param RequestInterface $request
      *
      * @return string

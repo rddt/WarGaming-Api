@@ -19,7 +19,7 @@ use WarGaming\Api\Annotation\FormData;
  *
  * @author Vitaliy Zhuk <zhuk2205@gmail.com>
  */
-abstract class AbstractPagerMethod extends AbstractMethod
+abstract class AbstractPagerMethod extends AbstractMethod implements PagerMethodInterface
 {
     /**
      * @var int
@@ -45,4 +45,40 @@ abstract class AbstractPagerMethod extends AbstractMethod
      * @FormData(name="page_no")
      */
     public $page = 1;
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setLimit($limit)
+    {
+        $this->limit = $limit;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setPage($page)
+    {
+        $this->page = $page;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPage()
+    {
+        return $this->page;
+    }
 }
