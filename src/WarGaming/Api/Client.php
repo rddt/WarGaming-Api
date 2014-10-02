@@ -17,10 +17,14 @@ use Guzzle\Http\Client as GuzzleClient;
 use Guzzle\Http\Exception\BadResponseException;
 use Guzzle\Http\Message\EntityEnclosingRequestInterface;
 use Guzzle\Http\Message\RequestInterface;
+use Guzzle\Http\Message\Response;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use WarGaming\Api\Cache\ArrayCache;
 use WarGaming\Api\Cache\CacheInterface;
 use WarGaming\Api\Exception\ExceptionFactory;
+use WarGaming\Api\Exception\RequestErrorException;
+use WarGaming\Api\Factory\ApplicationIdFactoryInterface;
+use WarGaming\Api\Factory\NativeApplicationIdFactory;
 use WarGaming\Api\FormData\FormDataGenerator;
 use WarGaming\Api\FormData\FormDataGeneratorInterface;
 use WarGaming\Api\Method\MethodInterface;
@@ -70,9 +74,9 @@ class Client
     private $defaultLanguage = 'en';
 
     /**
-     * @var string
+     * @var ApplicationIdFactoryInterface
      */
-    private $applicationId;
+    private $applicationIdFactory;
 
     /**
      * @var string
@@ -85,6 +89,13 @@ class Client
      * @var bool
      */
     private $apiSecure = true;
+
+    /**
+     * Suppress source not available error
+     *
+     * @var int
+     */
+    private $suppressSourceNotAvailableError = 3;
 
     /**
      * Construct
@@ -110,30 +121,56 @@ class Client
         $this->formDataGenerator = $formDataGenerator;
         $this->apiHost = $apiHost ?: self::DEFAULT_HOST;
         $this->apiSecure = (bool) $apiSecure;
+        $this->cache = new ArrayCache();
     }
 
     /**
-     * Set application ID
+     * Set suppress source not available error
      *
-     * @param string $applicationId
+     * @param int $count
      *
      * @return Client
      */
-    public function setApplicationId($applicationId)
+    public function setSuppressSourceNotAvailableError($count)
     {
-        $this->applicationId = $applicationId;
+        $this->suppressSourceNotAvailableError = $count;
 
         return $this;
     }
 
     /**
-     * Get application ID
+     * Set application ID
      *
-     * @return string
+     * @param string|object $applicationId
+     *
+     * @return Client
+     *
+     * @throws \InvalidArgumentException
      */
-    public function getApplicationId()
+    public function setApplicationId($applicationId)
     {
-        return $this->applicationId;
+        if (is_scalar($applicationId)) {
+            $applicationId = new NativeApplicationIdFactory($applicationId);
+        } elseif (!$applicationId instanceof ApplicationIdFactoryInterface) {
+            throw new \InvalidArgumentException(sprintf(
+                'The first parameter must be implements of ApplicationIdFactoryInterface, but "%s" given.',
+                get_class($applicationId)
+            ));
+        }
+
+        $this->applicationIdFactory = $applicationId;
+
+        return $this;
+    }
+
+    /**
+     * Get application id factory
+     *
+     * @return ApplicationIdFactoryInterface
+     */
+    public function getApplicationIdFactory()
+    {
+        return $this->applicationIdFactory;
     }
 
     /**
@@ -227,58 +264,82 @@ class Client
             $httpRequest->getQuery()->add('language', $language);
         }
 
-        // Call request start event.
-        // Must be call before set authorization info
-        $this->dispatch(Events::REQUEST_START, new Events\RequestStartEvent($httpRequest));
 
         // Set application ID to request
-        if (!$this->applicationId) {
+        if (!$this->applicationIdFactory) {
             throw ExceptionFactory::missingApplicationId();
         }
 
-        $httpRequest->getQuery()->add('application_id', $this->applicationId);
+        // Start request. Get application ID
+        $applicationId = $this->applicationIdFactory->getApplicationId();
+
+        $httpRequest->getQuery()->add('application_id', $applicationId);
 
         // Check request in cache storage
         $requestResponse = null;
+        $json = null;
         $cacheKey = null;
         $mustCache = $method->isCacheAvailable() && null !== $ttl = $method->getCacheTtl() && $this->cache;
 
         if ($mustCache) {
+            // Try get response from cache storage
             $cacheKey = $this->generateCacheKey($httpRequest);
-            $requestResponse = $this->cache->fetch($cacheKey);
+            if ($requestResponse = $this->cache->fetch($cacheKey)) {
+                $json = $this->processResponse($requestResponse);
+            }
         }
 
         if (!$requestResponse) {
-            $requestResponse = $this->processRequest($httpRequest);
-        }
+            $tryIteration = $this->suppressSourceNotAvailableError > 0 ?: 1;
+            $lastException = null;
 
-        $this->dispatch(Events::REQUEST_COMPLETE, new Events\RequestCompleteEvent($httpRequest, $requestResponse));
+            while ($tryIteration--) {
+                try {
+                    // Process request
+                    $requestResponse = $this->processRequest($httpRequest);
+                    $this->applicationIdFactory->process($applicationId);
 
-        $json = $requestResponse->json();
+                    // Process response
+                    $json = $this->processResponse($requestResponse);
 
-        if (empty($json['status'])) {
-            throw ExceptionFactory::missingKeyInResponse('status');
-        }
+                    if ($mustCache) {
+                        // Response must be caching
+                        $this->cache->set(
+                            $this->generateCacheKey($httpRequest),
+                            $requestResponse,
+                            $method->getCacheTtl()
+                        );
+                    }
 
-        if ($json['status'] == 'error') {
-            if (empty($json['error'])) {
-                throw ExceptionFactory::missingKeyInResponse('error');
+                    $this->dispatch(Events::REQUEST_COMPLETE, new Events\RequestCompleteEvent($httpRequest, $requestResponse));
+
+                    // All OK. Exit from loop.
+                    if ($lastException) {
+                        $lastException = null;
+                    }
+                    break;
+                } catch (\Exception $e) {
+                    $lastException = $e;
+
+                    $this->applicationIdFactory->process($applicationId);
+                    $this->dispatch(Events::REQUEST_ERROR, new Events\RequestErrorEvent($e));
+
+                    if ($e instanceof RequestErrorException) {
+                        if ($e->getCode() === RequestErrorException::SOURCE_NOT_AVAILABLE) {
+                            continue;
+                        }
+                    }
+
+                    throw $e;
+                }
             }
 
-            throw ExceptionFactory::requestErrorFromWarGamingResponse($json['error']);
-        } elseif ($json['status'] == 'ok') {
-            if (empty($json['data'])) {
-                throw ExceptionFactory::missingKeyInResponse('data');
+            if ($lastException) {
+                throw $lastException;
             }
-
-            if ($mustCache) {
-                $this->cache->set($cacheKey, $requestResponse, $method->getCacheTtl());
-            }
-
-            $data = $json['data'];
-        } else {
-            throw ExceptionFactory::unavailableStatus($json['status']);
         }
+
+        $data = $json['data'];
 
         $response = $processor->parseResponse($data, $json, $requestResponse, $method);
 
@@ -290,12 +351,16 @@ class Client
      *
      * @param RequestInterface $httpRequest
      *
-     * @return \Guzzle\Http\Message\Response
+     * @return Response
      *
      * @throws \Exception
      */
     protected function processRequest(RequestInterface $httpRequest)
     {
+        // Call request start event.
+        // Must be call before set authorization info
+        $this->dispatch(Events::REQUEST_START, new Events\RequestStartEvent($httpRequest));
+
         // Sending request
         try {
             $requestResponse = $this->httpClient->send($httpRequest);
@@ -327,6 +392,41 @@ class Client
 
         return $requestResponse;
     }
+
+    /**
+     * Process response
+     *
+     * @param Response $response
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
+    protected function processResponse(Response $response)
+    {
+        $json = $response->json();
+
+        if (empty($json['status'])) {
+            throw ExceptionFactory::missingKeyInResponse('status');
+        }
+
+        if ($json['status'] == 'error') {
+            if (empty($json['error'])) {
+                throw ExceptionFactory::missingKeyInResponse('error');
+            }
+
+            throw ExceptionFactory::requestErrorFromWarGamingResponse($json['error']);
+        } elseif ($json['status'] == 'ok') {
+            if (empty($json['data'])) {
+                throw ExceptionFactory::missingKeyInResponse('data');
+            }
+        } else {
+            throw ExceptionFactory::unavailableStatus($json['status']);
+        }
+
+        return $json;
+    }
+
 
     /**
      * Dispatch event
@@ -399,7 +499,6 @@ class Client
 
         /** @var Client $client */
         $client = new static($guzzle, $validator, $eventDispatcher, $formDataGenerator);
-        $client->setCache(new ArrayCache());
 
         return $client;
     }

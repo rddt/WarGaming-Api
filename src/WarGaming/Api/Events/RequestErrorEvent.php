@@ -11,7 +11,6 @@
 
 namespace WarGaming\Api\Events;
 
-use Guzzle\Http\Exception\BadResponseException;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -22,16 +21,16 @@ use Symfony\Component\EventDispatcher\Event;
 class RequestErrorEvent extends Event
 {
     /**
-     * @var BadResponseException
+     * @var \Exception
      */
     private $exception;
 
     /**
      * Construct
      *
-     * @param BadResponseException $exception
+     * @param \Exception $exception
      */
-    public function __construct(BadResponseException $exception)
+    public function __construct(\Exception $exception)
     {
         $this->exception = $exception;
     }
@@ -39,7 +38,7 @@ class RequestErrorEvent extends Event
     /**
      * Get exception
      *
-     * @return BadResponseException
+     * @return \Exception
      */
     public function getException()
     {

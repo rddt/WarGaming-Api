@@ -47,7 +47,7 @@ class RequestDebugSubscriber implements EventSubscriberInterface
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct($stdOut, $mode)
+    public function __construct($stdOut, $mode = 0b00000111)
     {
         if (!is_resource($stdOut)) {
             throw new \InvalidArgumentException(sprintf(

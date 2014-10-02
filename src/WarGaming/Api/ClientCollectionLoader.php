@@ -104,12 +104,13 @@ class ClientCollectionLoader
 
         // Group iteration
         $result = array();
+        $returnNull = false;
         foreach ($groups as $group) {
             $propertyReflection->setValue($method, $group);
 
             $data = $this->client->request($method);
 
-            if (!is_array($data)) {
+            if ($data != null && !is_array($data)) {
                 throw new \RuntimeException(sprintf(
                     'The processor class for method "%s" must be return array, but "%s" given.',
                     get_class($method),
@@ -117,10 +118,20 @@ class ClientCollectionLoader
                 ));
             }
 
-            $result = array_merge($result, $data);
+            if ($data === null) {
+                $returnNull = true;
+            } else {
+                if ($returnNull) {
+                    throw new \RuntimeException(sprintf(
+                        'The process class for method "%s" must be return one type, but first return null, and next another type.',
+                        get_class($method)
+                    ));
+                }
+                $result = array_merge($result, $data);
+            }
         }
 
-        return $result;
+        return $returnNull ? null : $result;
     }
 
     /**
