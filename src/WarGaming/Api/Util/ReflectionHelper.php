@@ -10,6 +10,7 @@
  */
 
 namespace WarGaming\Api\Util;
+use Doctrine\Common\Annotations\Reader;
 
 /**
  * Reflection helper
@@ -58,6 +59,35 @@ class ReflectionHelper
         foreach (self::getProperties($reflection) as $property) {
             if ($property->getName() == $propertyName) {
                 return $property;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get identifier value from object
+     *
+     * @param Reader $reader
+     * @param object $object
+     *
+     * @return string|integer|null
+     */
+    public static function getIdentifierValue(Reader $reader, $object)
+    {
+        $reflection = new \ReflectionObject($object);
+        $properties = ReflectionHelper::getProperties($reflection);
+
+        foreach ($properties as $property) {
+            $annotation = $reader->getPropertyAnnotation($property, 'WarGaming\Api\Annotation\Id');
+
+            if ($annotation) {
+                // Annotation exists. This is a identifier value
+                if (!$property->isPublic()) {
+                    $property->setAccessible(true);
+                }
+
+                return $property->getValue($object);
             }
         }
 

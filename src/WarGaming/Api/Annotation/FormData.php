@@ -27,4 +27,6 @@ class FormData
     public $type;
     /** @var bool */
     public $collectionLoad = false;
+    /** @var bool */
+    public $collectionCacheLoad = false;
 }

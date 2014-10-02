@@ -143,7 +143,7 @@ class ClientCollectionLoader
      *
      * @throws \RuntimeException
      */
-    public function getPropertyForCollectionLoad(MethodInterface $method)
+    private function getPropertyForCollectionLoad(MethodInterface $method)
     {
         $methodReflection = new \ReflectionObject($method);
         $properties = ReflectionHelper::getProperties($methodReflection);

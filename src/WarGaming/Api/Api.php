@@ -37,6 +37,11 @@ class Api
     private $clientCollectionLoader;
 
     /**
+     * @var ClientCollectionCacheLoader
+     */
+    private $clientCollectionCacheLoader;
+
+    /**
      * @var ClientFullLoader
      */
     private $clientFullLoader;
@@ -44,14 +49,20 @@ class Api
     /**
      * Construct
      *
-     * @param Client                 $client
-     * @param ClientCollectionLoader $collectionLoader
-     * @param ClientFullLoader       $fullLoader
+     * @param Client                      $client
+     * @param ClientCollectionLoader      $collectionLoader
+     * @param ClientCollectionCacheLoader $collectionCacheLoader
+     * @param ClientFullLoader            $fullLoader
      */
-    public function __construct(Client $client, ClientCollectionLoader $collectionLoader, ClientFullLoader $fullLoader)
-    {
+    public function __construct(
+        Client $client,
+        ClientCollectionLoader $collectionLoader,
+        ClientCollectionCacheLoader $collectionCacheLoader,
+        ClientFullLoader $fullLoader
+    ) {
         $this->client = $client;
         $this->clientCollectionLoader = $collectionLoader;
+        $this->clientCollectionCacheLoader = $collectionCacheLoader;
         $this->clientFullLoader = $fullLoader;
     }
 
@@ -77,6 +88,18 @@ class Api
     public function requestCollection(MethodInterface $method)
     {
         return $this->clientCollectionLoader->request($method);
+    }
+
+    /**
+     * Request method with collection cache loader
+     *
+     * @param MethodInterface $method
+     *
+     * @return mixed
+     */
+    public function requestCollectionCache(MethodInterface $method)
+    {
+        return $this->clientCollectionCacheLoader->request($method);
     }
 
     /**
@@ -158,6 +181,6 @@ class Api
         $method = new TankInfo();
         $method->tanks = $tanks;
 
-        $this->clientCollectionLoader->request($method);
+        $this->clientCollectionCacheLoader->request($method);
     }
 }

@@ -83,7 +83,7 @@ class FormDataGenerator implements FormDataGeneratorInterface
                         foreach ($value as $element) {
                             if (is_object($element)) {
                                 // Try get value from object by identifier.
-                                $element = $this->getIdentifierValue($element);
+                                $element = ReflectionHelper::getIdentifierValue($this->reader, $element);
                             }
 
                             if ($element) {
@@ -101,32 +101,5 @@ class FormDataGenerator implements FormDataGeneratorInterface
         }
 
         return $formData;
-    }
-
-    /**
-     * Get identifier value from object
-     *
-     * @param object $object
-     * @return string|integer|null
-     */
-    private function getIdentifierValue($object)
-    {
-        $reflection = new \ReflectionObject($object);
-        $properties = ReflectionHelper::getProperties($reflection);
-
-        foreach ($properties as $property) {
-            $annotation = $this->reader->getPropertyAnnotation($property, 'WarGaming\Api\Annotation\Id');
-
-            if ($annotation) {
-                // Annotation exists. This is a identifier value
-                if (!$property->isPublic()) {
-                    $property->setAccessible(true);
-                }
-
-                return $property->getValue($object);
-            }
-        }
-
-        return null;
     }
 }

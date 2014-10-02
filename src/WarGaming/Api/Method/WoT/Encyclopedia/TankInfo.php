@@ -18,6 +18,9 @@ use WarGaming\Api\Method\AbstractMethod;
 /**
  * Tank info API
  *
+ * Attention: the processor this this method not return value. All tank info
+ * saved in TankInfo::tanks property!
+ *
  * @author Vitaliy Zhuk <zhuk2205@gmail.com>
  */
 class TankInfo extends AbstractMethod
@@ -34,7 +37,7 @@ class TankInfo extends AbstractMethod
      *      @Assert\Type("WarGaming\Api\Model\WoT\Tank\Tank")
      * })
      *
-     * @FormData(name="tank_id", type="list")
+     * @FormData(name="tank_id", type="list", collectionLoad=true, collectionCacheLoad=true)
      */
     public $tanks = array();
 
