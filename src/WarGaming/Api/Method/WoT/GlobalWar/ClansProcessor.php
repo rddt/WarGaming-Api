@@ -15,6 +15,7 @@ use Guzzle\Http\Message\Response as GuzzleResponse;
 use WarGaming\Api\Method\AbstractProcessor;
 use WarGaming\Api\Method\MethodInterface;
 use WarGaming\Api\Model\WoT\Clan;
+use WarGaming\Api\Model\WoT\ClanCollection;
 
 /**
  * Get clans API processor
@@ -36,10 +37,11 @@ class ClansProcessor extends AbstractProcessor
      */
     public function parseResponse(array $data, array $fullData, GuzzleResponse $response, MethodInterface $method)
     {
-        $clans = array();
+        $clans = new ClanCollection();
 
         foreach ($data as $info) {
-            $clans[] = Clan::createFromArray($info);
+            $clan = Clan::createFromArray($info);
+            $clans[$clan->id] = $clan;
         }
 
         return $clans;

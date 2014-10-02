@@ -12,6 +12,7 @@
 namespace WarGaming\Api;
 
 use WarGaming\Api\Method\PagerMethodInterface;
+use WarGaming\Api\Model\Collection;
 
 /**
  * Load data from all pages.
@@ -75,12 +76,13 @@ class ClientFullLoader
      *
      * @param PagerMethodInterface $method
      * @param integer              $limit
+     * @param Collection           $result
      *
      * @return array
      *
      * @throws \RuntimeException
      */
-    public function request(PagerMethodInterface $method, $limit = null)
+    public function request(PagerMethodInterface $method, $limit = null, Collection $result = null)
     {
         if (!$limit) {
             $limit = $this->defaultLimit;
@@ -91,17 +93,20 @@ class ClientFullLoader
         $method->setLimit($limit);
 
         // Attention: Start infinite loop!
-        $result = array();
+        if (!$result) {
+            $result = new Collection();
+        }
 
         while (true) {
             $method->setPage($activePage);
+            /** @var Collection $data */
             $data = $this->client->request($method);
 
-            if (is_array($data)) {
-                $result = array_merge($result, $data);
+            if ($data instanceof Collection) {
+                $result->merge($data);
             } else {
                 throw new \RuntimeException(sprintf(
-                    'The processor for method "%s" must be return array, but "%s" given.',
+                    'The processor for method "%s" must be return Collection instance, but "%s" given.',
                     get_class($method),
                     is_object($data) ? get_class($data) : gettype($data)
                 ));

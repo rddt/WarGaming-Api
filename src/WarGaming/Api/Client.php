@@ -21,6 +21,9 @@ use Guzzle\Http\Message\Response;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use WarGaming\Api\Cache\ArrayCache;
 use WarGaming\Api\Cache\CacheInterface;
+use WarGaming\Api\Events\MethodCompleteEvent;
+use WarGaming\Api\Events\MethodErrorEvent;
+use WarGaming\Api\Events\MethodStartEvent;
 use WarGaming\Api\Exception\ExceptionFactory;
 use WarGaming\Api\Exception\RequestErrorException;
 use WarGaming\Api\Factory\ApplicationIdFactoryInterface;
@@ -238,6 +241,32 @@ class Client
      */
     public function request(MethodInterface $method)
     {
+        try {
+            $this->dispatch(Events::METHOD_START, new MethodStartEvent($method));
+            $response = $this->doRequest($method);
+            $this->dispatch(Events::METHOD_COMPLETE, new MethodCompleteEvent($method, $response));
+
+        } catch (\Exception $e) {
+            $this->dispatch(Events::METHOD_ERROR, new MethodErrorEvent($method, $e));
+
+            throw $e;
+        }
+
+        return $response;
+    }
+
+    /**
+     * API Request process
+     *
+     * @param MethodInterface $method
+     *
+     * @return mixed
+     *
+     * @throws \Exception
+     */
+    private function doRequest(MethodInterface $method)
+    {
+
         $validator = $this->validator;
 
         $violationList = $validator->validate($method, $method->getValidationGroups());
@@ -263,7 +292,6 @@ class Client
         if ($language) {
             $httpRequest->getQuery()->add('language', $language);
         }
-
 
         // Set application ID to request
         if (!$this->applicationIdFactory) {

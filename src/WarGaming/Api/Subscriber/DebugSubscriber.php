@@ -13,17 +13,21 @@ namespace WarGaming\Api\Subscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use WarGaming\Api\Events;
+use WarGaming\Api\Events\MethodStartEvent;
+use WarGaming\Api\Events\MethodCompleteEvent;
+use WarGaming\Api\Events\MethodErrorEvent;
 use WarGaming\Api\Events\RequestCompleteEvent;
 use WarGaming\Api\Events\RequestErrorEvent;
 use WarGaming\Api\Events\RequestStartEvent;
+use WarGaming\Api\Exception\MethodNotValidException;
 
 /**
- * Request debug subscriber.
+ * Debug subscriber.
  * View request for next debugging.
  *
  * @author Vitaliy Zhuk <zhuk2205@gmail.com>
  */
-class RequestDebugSubscriber implements EventSubscriberInterface
+class DebugSubscriber implements EventSubscriberInterface
 {
     const DEBUG_START       = 0b00000001;
     const DEBUG_COMPLETE    = 0b00000010;
@@ -58,6 +62,73 @@ class RequestDebugSubscriber implements EventSubscriberInterface
 
         $this->stdOut = $stdOut;
         $this->mode = $mode;
+    }
+
+    /**
+     * Event on api method start
+     *
+     * @param MethodStartEvent $event
+     */
+    public function methodStart(MethodStartEvent $event)
+    {
+        if (!($this->mode & self::DEBUG_START)) {
+            return;
+        }
+
+        $method = $event->getMethod();
+
+        $this->writeln(sprintf(
+            'Start API method: %s',
+            get_class($method)
+        ));
+    }
+
+    /**
+     * Event on api method complete
+     */
+    public function methodComplete()
+    {
+        if (!($this->mode & self::DEBUG_COMPLETE)) {
+            return;
+        }
+
+        $this->writeln('Success process API method.');
+
+        $this->writeln(null);
+    }
+
+    /**
+     * Event in api method error
+     *
+     * @param MethodErrorEvent $event
+     */
+    public function methodError(MethodErrorEvent $event)
+    {
+        if (!($this->mode & self::DEBUG_COMPLETE)) {
+            return;
+        }
+
+        $exception = $event->getException();
+
+        $this->writeln(sprintf(
+            'Error with process API method with message: %s',
+            $exception->getMessage()
+        ));
+
+        if ($exception instanceof MethodNotValidException) {
+            $this->writeln("Method not valid:");
+
+            foreach ($exception->getViolationList() as $violation) {
+                /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
+                $this->writeln(sprintf(
+                    "%s: %s",
+                    $violation->getPropertyPath(),
+                    $violation->getMessage()
+                ));
+            }
+        }
+
+        $this->writeln(null);
     }
 
     /**
@@ -101,8 +172,6 @@ class RequestDebugSubscriber implements EventSubscriberInterface
             'Success process request. Content length: %d.',
             (string) $response->getHeader('Content-Length')
         ));
-
-        $this->writeln(null);
     }
 
     /**
@@ -122,8 +191,6 @@ class RequestDebugSubscriber implements EventSubscriberInterface
             'Request error with message: %s',
             $message
         ));
-
-        $this->writeln(null);
     }
 
     /**
@@ -150,6 +217,18 @@ class RequestDebugSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
+            Events::METHOD_START => array(
+                array('methodStart')
+            ),
+
+            Events::METHOD_COMPLETE => array(
+                array('methodComplete')
+            ),
+
+            Events::METHOD_ERROR => array(
+                array('methodError')
+            ),
+
             Events::REQUEST_START => array(
                 array('requestStart')
             ),

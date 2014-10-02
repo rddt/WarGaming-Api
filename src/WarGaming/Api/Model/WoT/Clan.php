@@ -12,6 +12,7 @@
 namespace WarGaming\Api\Model\WoT;
 
 use WarGaming\Api\Annotation\Id;
+use WarGaming\Api\Model\Collection;
 use WarGaming\Api\Util\DateTime;
 
 /**
@@ -74,7 +75,7 @@ class Clan
     public $descriptionHtml;
 
     /**
-     * @var array|Account[]
+     * @var AccountCollection|Account[]
      */
     public $members = array();
 
@@ -82,6 +83,15 @@ class Clan
      * @var array|Province[]
      */
     public $provinces = array();
+
+    /**
+     * Construct
+     */
+    public function __construct()
+    {
+        $this->members = new Collection();
+        $this->provinces = new Collection();
+    }
 
     /**
      * Create new instance from array
@@ -97,7 +107,7 @@ class Clan
 
         $clan->id = isset($data['clan_id']) ? $data['clan_id'] : null;
 
-        $clan->provinces = array();
+        $clan->provinces = new Collection();
         if (!empty($data['provinces'])) {
             foreach ($data['provinces'] as $provinceInfo) {
                 $clan->provinces[] = Province::createFromArray($provinceInfo);
@@ -127,7 +137,7 @@ class Clan
         $this->updatedAt = isset($data['updated_at']) ? DateTime::dateTimeFromTimestamp($data['updated_at']) : null;
 
         // Grouping members
-        $this->members = array();
+        $this->members = new AccountCollection();
         if (isset($data['members'])) {
             foreach ($data['members'] as $memberInfo) {
                 $this->members[] = Account::createFromArray($memberInfo);

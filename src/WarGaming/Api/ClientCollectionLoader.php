@@ -14,6 +14,7 @@ namespace WarGaming\Api;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\Reader;
 use WarGaming\Api\Method\MethodInterface;
+use WarGaming\Api\Model\Collection;
 use WarGaming\Api\Util\ReflectionHelper;
 
 /**
@@ -50,8 +51,6 @@ class ClientCollectionLoader
      *
      * @param MethodInterface $method
      *
-     * @return array
-     *
      * @throws \RuntimeException
      */
     public function request(MethodInterface $method)
@@ -68,7 +67,7 @@ class ClientCollectionLoader
 
         if (!$countAnnotation || !$countAnnotation->max) {
             // Not found count constraint. Use default.
-            return $this->client->request($method);
+            $this->client->request($method);
         }
 
         if (!$propertyReflection->isPublic()) {
@@ -79,11 +78,11 @@ class ClientCollectionLoader
 
         if (count($values) <= $countAnnotation->max) {
             // Not exceeded the limit. Use default.
-            return $this->client->request($method);
+            $this->client->request($method);
         }
 
         // Limit exceeded. Grouping.
-        $groupValues = array();
+        $groupValues = new Collection();
         $groups = array();
         $countInGroup = 0;
 
@@ -94,7 +93,7 @@ class ClientCollectionLoader
             if ($countInGroup >= $countAnnotation->max) {
                 $countInGroup = 0;
                 $groups[] = $groupValues;
-                $groupValues = array();
+                $groupValues = new Collection();
             }
         }
 
@@ -102,36 +101,10 @@ class ClientCollectionLoader
             $groups[] = $groupValues;
         }
 
-        // Group iteration
-        $result = array();
-        $returnNull = false;
         foreach ($groups as $group) {
             $propertyReflection->setValue($method, $group);
-
-            $data = $this->client->request($method);
-
-            if ($data != null && !is_array($data)) {
-                throw new \RuntimeException(sprintf(
-                    'The processor class for method "%s" must be return array, but "%s" given.',
-                    get_class($method),
-                    is_object($data) ? get_class($data) : gettype($data)
-                ));
-            }
-
-            if ($data === null) {
-                $returnNull = true;
-            } else {
-                if ($returnNull) {
-                    throw new \RuntimeException(sprintf(
-                        'The process class for method "%s" must be return one type, but first return null, and next another type.',
-                        get_class($method)
-                    ));
-                }
-                $result = array_merge($result, $data);
-            }
+            $this->client->request($method);
         }
-
-        return $returnNull ? null : $result;
     }
 
     /**

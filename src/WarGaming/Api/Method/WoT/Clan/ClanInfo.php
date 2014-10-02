@@ -14,6 +14,7 @@ namespace WarGaming\Api\Method\WoT\Clan;
 use Symfony\Component\Validator\Constraints as Assert;
 use WarGaming\Api\Annotation\FormData;
 use WarGaming\Api\Method\AbstractMethod;
+use WarGaming\Api\Model\Collection;
 use WarGaming\Api\Model\WoT\Clan;
 
 /**
@@ -22,25 +23,33 @@ use WarGaming\Api\Model\WoT\Clan;
 class ClanInfo extends AbstractMethod
 {
     /**
-     * @var array|Clan[]
+     * @var \WarGaming\Api\Model\Collection|Clan[]
      *
+     * @Assert\Type("WarGaming\Api\Model\Collection")
      * @Assert\Count(
      *      min = 1,
      *      max = 100
      * )
-     * @Assert\Type("array")
      * @Assert\All({
      *      @Assert\Type("WarGaming\Api\Model\WoT\Clan")
      * })
      *
      * @FormData(name="clan_id", type="list", collectionLoad=true)
      */
-    public $clans = array();
+    public $clans;
 
     /**
      * @var int
      */
     public $cacheTtl = 3600;
+
+    /**
+     * Construct
+     */
+    public function __construct()
+    {
+        $this->clans = new Collection();
+    }
 
     /**
      * {@inheritDoc}

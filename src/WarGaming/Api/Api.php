@@ -18,6 +18,8 @@ use WarGaming\Api\Method\WoT\Clan\ClanInfo;
 use WarGaming\Api\Method\WoT\Encyclopedia\TankInfo;
 use WarGaming\Api\Method\WoT\GlobalWar\Clans;
 use WarGaming\Api\Method\WoT\GlobalWar\Maps;
+use WarGaming\Api\Model\Collection;
+use WarGaming\Api\Model\WoT\ClanCollection;
 
 /**
  * WarGaming Api wrapper
@@ -87,7 +89,7 @@ class Api
      */
     public function requestCollection(MethodInterface $method)
     {
-        return $this->clientCollectionLoader->request($method);
+        $this->clientCollectionLoader->request($method);
     }
 
     /**
@@ -99,7 +101,7 @@ class Api
      */
     public function requestCollectionCache(MethodInterface $method)
     {
-        return $this->clientCollectionCacheLoader->request($method);
+        $this->clientCollectionCacheLoader->request($method);
     }
 
     /**
@@ -132,23 +134,23 @@ class Api
      *
      * @param string $map
      *
-     * @return array|\WarGaming\Api\Model\WoT\Clan[]
+     * @return \WarGaming\Api\Model\WoT\ClanCollection|\WarGaming\Api\Model\WoT\Clan[]
      */
     public function loadClans($map = 'globalmap')
     {
         $method = new Clans();
         $method->map = $map;
 
-        return $this->clientFullLoader->request($method);
+        return $this->clientFullLoader->request($method, null, new ClanCollection());
     }
 
     /**
      * Load clans info
      * Attention: not returning! All data saves in each clan instance.
      *
-     * @param array|\WarGaming\Api\Model\WoT\Clan[] $clans
+     * @param Collection|\WarGaming\Api\Model\WoT\Clan[] $clans
      */
-    public function loadClansInfo(array $clans)
+    public function loadClansInfo(Collection $clans)
     {
         $method = new ClanInfo();
         $method->clans = $clans;
@@ -160,9 +162,9 @@ class Api
      * Load account tanks
      * Attention: not returning! All data saves in each account instance.
      *
-     * @param array|\WarGaming\Api\Model\WoT\Account[] $accounts
+     * @param Collection|\WarGaming\Api\Model\WoT\Account[] $accounts
      */
-    public function loadAccountTanks(array $accounts)
+    public function loadAccountTanks(Collection $accounts)
     {
         $method = new Tanks();
         $method->accounts = $accounts;
@@ -172,11 +174,10 @@ class Api
 
     /**
      * Load tanks info
-     * Attention: not returning! All data saves in each tank instance.
      *
-     * @param array|\WarGaming\Api\Model\WoT\Tank\Tank[] $tanks
+     * @param Collection|\WarGaming\Api\Model\WoT\Tank\Tank[] $tanks
      */
-    public function loadTanksInfo(array $tanks)
+    public function loadTanksInfo(Collection $tanks)
     {
         $method = new TankInfo();
         $method->tanks = $tanks;

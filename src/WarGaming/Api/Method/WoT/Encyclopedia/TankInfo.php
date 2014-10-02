@@ -14,6 +14,7 @@ namespace WarGaming\Api\Method\WoT\Encyclopedia;
 use Symfony\Component\Validator\Constraints as Assert;
 use WarGaming\Api\Annotation\FormData;
 use WarGaming\Api\Method\AbstractMethod;
+use WarGaming\Api\Model\Collection;
 
 /**
  * Tank info API
@@ -26,9 +27,9 @@ use WarGaming\Api\Method\AbstractMethod;
 class TankInfo extends AbstractMethod
 {
     /**
-     * @var array|\WarGaming\Api\Model\WoT\Tank\Tank[]
+     * @var Collection|\WarGaming\Api\Model\WoT\Tank\Tank[]
      *
-     * @Assert\Type("array")
+     * @Assert\Type("WarGaming\Api\Model\Collection")
      * @Assert\Count(
      *      min = 1,
      *      max = 100
@@ -39,12 +40,20 @@ class TankInfo extends AbstractMethod
      *
      * @FormData(name="tank_id", type="list", collectionLoad=true, collectionCacheLoad=true)
      */
-    public $tanks = array();
+    public $tanks;
 
     /**
      * @var int
      */
     public $cacheTtl = 86400; // 1 day
+
+    /**
+     * Construct
+     */
+    public function __construct()
+    {
+        $this->tanks = new Collection();
+    }
 
     /**
      * {@inheritDoc}

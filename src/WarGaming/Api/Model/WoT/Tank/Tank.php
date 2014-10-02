@@ -12,6 +12,7 @@
 namespace WarGaming\Api\Model\WoT\Tank;
 
 use WarGaming\Api\Annotation\Id;
+use WarGaming\Api\Model\Collection;
 
 /**
  * Tank model
@@ -178,29 +179,41 @@ class Tank
     public $vehicleArmorForehead;
 
     /**
-     * @var array|TankCrew[]
+     * @var Collection|TankCrew[]
      */
-    public $crews = array();
+    public $crews;
 
     /**
-     * @var array|TankEngine[]
+     * @var Collection|TankEngine[]
      */
-    public $engines = array();
+    public $engines;
 
     /**
-     * @var array|TankGun[]
+     * @var Collection|TankGun[]
      */
-    public $guns = array();
+    public $guns;
 
     /**
-     * @var array|TankRadio[]
+     * @var Collection|TankRadio[]
      */
-    public $radios = array();
+    public $radios;
 
     /**
-     * @var array|TankTurret[]
+     * @var Collection|TankTurret[]
      */
-    public $turrets = array();
+    public $turrets;
+
+    /**
+     * Construct
+     */
+    public function __construct()
+    {
+        $this->crews = new Collection();
+        $this->engines = new Collection();
+        $this->guns = new Collection();
+        $this->radios = new Collection();
+        $this->turrets = new Collection();
+    }
 
     /**
      * Create new instance from data
@@ -267,35 +280,35 @@ class Tank
         $this->vehicleArmorFedd = isset($data['vehicle_armor_fedd']) ? $data['vehicle_armor_fedd'] : null;
         $this->vehicleArmorForehead = isset($data['vehicle_armor_forehead']) ? $data['vehicle_armor_forehead'] : null;
 
-        $this->crews = array();
+        $this->crews = new Collection();
         if (!empty($data['crew'])) {
             foreach ($data['crew'] as $crewInfo) {
                 $this->crews[] = TankCrew::createFromArray($crewInfo);
             }
         }
 
-        $this->engines = array();
+        $this->engines = new Collection();
         if (!empty($data['engines'])) {
             foreach ($data['engines'] as $engineInfo) {
                 $this->engines[] = TankEngine::createFromArray($engineInfo);
             }
         }
 
-        $this->guns = array();
+        $this->guns = new Collection();
         if (!empty($data['guns'])) {
             foreach ($data['guns'] as $gunInfo) {
                 $this->guns[] = TankGun::createFromArray($gunInfo);
             }
         }
 
-        $this->radios = array();
+        $this->radios = new Collection();
         if (!empty($data['radios'])) {
             foreach ($data['radios'] as $radioInfo) {
                 $this->radios[] = TankRadio::createFromArray($radioInfo);
             }
         }
 
-        $this->turrets = array();
+        $this->turrets = new Collection();
         if (!empty($data['turrets'])) {
             foreach ($data['turrets'] as $turretInfo) {
                 $this->turrets[] = TankTurret::createFromArray($turretInfo);

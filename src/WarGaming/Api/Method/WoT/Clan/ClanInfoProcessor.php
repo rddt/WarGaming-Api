@@ -16,7 +16,7 @@ use WarGaming\Api\Method\AbstractProcessor;
 use WarGaming\Api\Method\MethodInterface;
 
 /**
- * Clan info API processor
+ * Clan info API processor.
  *
  * @author Vitaliy Zhuk <zhuk2205@gmail.com>
  */
@@ -45,15 +45,9 @@ class ClanInfoProcessor extends AbstractProcessor
 
             $clanInfoId = $clanInfo['clan_id'];
 
-            // Search clan in storage
-            foreach ($processClans as $index => $clan) {
-                if ($clan->id == $clanInfoId) {
-                    $clan->setFullDataFromArray($clanInfo);
-                    unset ($processClans[$index]);
-                }
+            if (isset($processClans[$clanInfoId])) {
+                $processClans[$clanInfoId]->setFullDataFromArray($clanInfo);
             }
         }
-
-        return $method->clans;
     }
 }

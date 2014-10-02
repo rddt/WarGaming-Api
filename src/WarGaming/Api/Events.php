@@ -16,6 +16,10 @@ namespace WarGaming\Api;
  */
 final class Events
 {
+    const METHOD_START              = 'wargaming_api.method_start';
+    const METHOD_COMPLETE           = 'wargaming_api.method_complete';
+    const METHOD_ERROR              = 'wargaming_api.method_error';
+
     const REQUEST_START             = 'wargaming_api.request_start';
     const REQUEST_COMPLETE          = 'wargaming_api.request_complete';
     const REQUEST_ERROR             = 'wargaming_api.request_error';

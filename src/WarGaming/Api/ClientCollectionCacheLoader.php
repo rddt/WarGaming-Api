@@ -15,10 +15,15 @@ use Doctrine\Common\Annotations\Reader;
 use WarGaming\Api\Cache\ArrayCache;
 use WarGaming\Api\Cache\CacheInterface;
 use WarGaming\Api\Method\MethodInterface;
+use WarGaming\Api\Model\Collection;
 use WarGaming\Api\Util\ReflectionHelper;
 
 /**
- * Client encyclopedia loader
+ * Client collection cache loader
+ *
+ * Attention: now caching only "last" object, when not modified with another methods!
+ * @todo: add system for control changed field for object, and save/fetch only values
+ * for changed properties of object.
  *
  * @author Vitaliy Zhuk <zhuk2205@gmail.com>
  */
@@ -68,96 +73,96 @@ class ClientCollectionCacheLoader
      *
      * @param MethodInterface $method
      *
-     * @return array
-     *
      * @throws \RuntimeException
      */
-   public function request(MethodInterface $method)
-   {
-       if (null === $cacheTtl = $method->getCacheTtl()) {
+    public function request(MethodInterface $method)
+    {
+        if (null === $cacheTtl = $method->getCacheTtl()) {
             throw new \RuntimeException('Can not use collection cache loader with empty cache ttl!');
-       }
+        }
 
-       $reflectionProperty = $this->getPropertyForCollectionLoad($method);
+        $reflectionProperty = $this->getPropertyForCollectionLoad($method);
 
-       if (!$reflectionProperty->isPublic()) {
-           $reflectionProperty->setAccessible(true);
-       }
+        if (!$reflectionProperty->isPublic()) {
+            $reflectionProperty->setAccessible(true);
+        }
 
-       $collection = $reflectionProperty->getValue($method);
+        $collection = $reflectionProperty->getValue($method);
 
-       if (!is_array($collection) && !$collection instanceof \Traversable) {
-           throw new \RuntimeException(sprintf(
-               'The property value "%s" for method "%s" must be array or \Traversable instance, but "%s" given.',
-               $reflectionProperty->getName(),
-               get_class($method),
-               is_object($collection) ? get_class($collection) : gettype($collection)
-           ));
-       }
+        if (!$collection instanceof Collection) {
+            throw new \RuntimeException(sprintf(
+                'The property value "%s" for method "%s" must be Collection instance, but "%s" given.',
+                $reflectionProperty->getName(),
+                get_class($method),
+                is_object($collection) ? get_class($collection) : gettype($collection)
+            ));
+        }
 
-       $forLoads = array();
-       $result = array();
+        $forLoads = new Collection();
 
-       // First step: check collection item in cache storage.
-       foreach ($collection as $index => $collectionItem) {
-           if (!is_object($collectionItem)) {
-               throw new \RuntimeException(sprintf(
+        // First step: check collection item in cache storage.
+        foreach ($collection as $index => $collectionItem) {
+            if (!is_object($collectionItem)) {
+                throw new \RuntimeException(sprintf(
                    'The object at index "%s" in request collection must be a object, but "%s" given.',
                    $index,
                    is_object($collectionItem) ? get_class($collectionItem) : gettype($collectionItem)
-               ));
-           }
+                ));
+            }
 
-           $identifier = ReflectionHelper::getIdentifierValue($this->reader, $collectionItem);
+            $identifier = ReflectionHelper::getIdentifierValue($this->reader, $collectionItem);
 
-           if (null !== $identifier) {
-                // Identifier exists in object.
-                $cacheKey = $this->generateCacheKey($method, $index);
+            if (null === $identifier) {
+                throw new \RuntimeException(sprintf(
+                    'Not found identifier for object "%s" at index "%s".',
+                    get_class($collectionItem),
+                    $index
+                ));
+            }
 
-                if ($data = $this->cache->fetch($cacheKey, $cacheTtl)) {
-                    $result[$index] = $data;
-                } else {
-                    $forLoads[$index] = $collectionItem;
-                }
-           } else {
-               $forLoads[$index] = $collectionItem;
-           }
+            $cacheKey = $this->generateCacheKey($method, $index);
 
-           unset ($collection[$index]); // Remove unused index
-       }
+            if ($data = $this->cache->fetch($cacheKey)) {
+                $collection[$index] = $data;
+            } else {
+                $forLoads[$index] = $collectionItem;
+            }
+        }
 
-       unset ($collection);
+        if (!count($forLoads)) {
+            return;
+        }
 
-       // Second step: set values for next load to method property and call to API client
-       $reflectionProperty->setValue($method, $forLoads);
+        // Second step: set values for next load to method property and call to API client
+        $reflectionProperty->setValue($method, $forLoads);
 
-       // Attention: method for load collection could not return value.
-       // All data must be saves in method property instance!
-       $this->collectionLoader->request($method);
+        // Attention: method for load collection could not return value.
+        // All data must be saves in method property instance!
+        $this->collectionLoader->request($method);
 
-       // Second three: save values in storage
-       foreach ($forLoads as $index => $collectionItem) {
-           if (!is_object($collectionItem)) {
-               throw new \RuntimeException(sprintf(
-                   'The object at index "%s" in response collection must be a object, but "%s" given.',
-                   $index,
-                   is_object($collectionItem) ? get_class($collectionItem) : gettype($collectionItem)
-               ));
-           }
+        // Second three: save values in storage
+        foreach ($forLoads as $index => $collectionItem) {
+            if (!is_object($collectionItem)) {
+                throw new \RuntimeException(sprintf(
+                    'The object at index "%s" in response collection must be a object, but "%s" given.',
+                    $index,
+                    is_object($collectionItem) ? get_class($collectionItem) : gettype($collectionItem)
+                ));
+            }
 
-           $identifier = ReflectionHelper::getIdentifierValue($this->reader, $collectionItem);
+            $identifier = ReflectionHelper::getIdentifierValue($this->reader, $collectionItem);
 
-           if (null !== $identifier) {
-               $cacheKey = $this->generateCacheKey($method, $identifier);
-               $this->cache->set($cacheKey, $collectionItem, $cacheTtl);
-               $result[$index] = $collectionItem;
-           } else {
-               $result[$index] = $collectionItem;
-           }
-       }
+            if (null !== $identifier) {
+                $cacheKey = $this->generateCacheKey($method, $identifier);
+                $this->cache->set($cacheKey, $collectionItem, $cacheTtl);
+                $collection[$index] = $collectionItem;
+            } else {
+                $collection[$index] = $collectionItem;
+            }
+        }
 
-       return $result;
-   }
+        return;
+    }
 
     /**
      * Generate cache key for method and index
