@@ -30,7 +30,7 @@ class ArrayCache implements CacheInterface
     {
         $this->storage[$key] = array(
             'data' => $data,
-            'lifetime' => $lifetime
+            'lifetime' => $lifetime ? $lifetime + time() : 0
         );
 
         return true;

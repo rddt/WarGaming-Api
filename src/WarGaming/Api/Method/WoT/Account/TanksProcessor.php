@@ -41,6 +41,7 @@ class TanksProcessor extends AbstractProcessor
             if (!empty($data[$account->id])) {
                 foreach ($data[$account->id] as $accountTankInfo) {
                     $accountTank = AccountTank::createFromArray($accountTankInfo);
+                    $accountTank->account = $account;
                     $account->tanks[] = $accountTank;
                 }
             }

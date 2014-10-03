@@ -108,13 +108,19 @@ class ClientCollectionLoader
             $groups[] = $groupValues;
         }
 
-        $collection->clear();
+        //$collection->clear();
 
         foreach ($groups as $group) {
             $propertyReflection->setValue($method, $group);
             $this->client->request($method);
 
-            $collection->addCollection($group);
+            foreach ($group as $index => $value) {
+                $element = $collection[$index];
+
+                ReflectionHelper::mergeObject($element, $value);
+            }
+
+            //$collection->addCollection($group);
         }
     }
 

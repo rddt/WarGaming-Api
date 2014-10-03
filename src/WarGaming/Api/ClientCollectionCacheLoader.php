@@ -99,6 +99,8 @@ class ClientCollectionCacheLoader
         }
 
         $forLoads = new Collection();
+        $forLoadsIndexes = array();
+        $uniqueIdentifiers = array();
 
         // First step: check collection item in cache storage.
         foreach ($collection as $index => $collectionItem) {
@@ -120,13 +122,19 @@ class ClientCollectionCacheLoader
                 ));
             }
 
-            $cacheKey = $this->generateCacheKey($method, $index);
+            $cacheKey = $this->generateCacheKey($method, $identifier);
 
             if ($data = $this->cache->fetch($cacheKey)) {
-                $collection[$index] = $data;
+                ReflectionHelper::mergeObject($collection[$index], $data);
             } else {
-                $forLoads[$index] = $collectionItem;
+                $forLoadsIndexes[$index] = $identifier;
+
+                if (!in_array($identifier, $uniqueIdentifiers)) {
+                    $forLoads[$index] = $collectionItem;
+                }
             }
+
+            $uniqueIdentifiers[] = $identifier;
         }
 
         if (!count($forLoads)) {
@@ -140,24 +148,36 @@ class ClientCollectionCacheLoader
         // All data must be saves in method property instance!
         $this->collectionLoader->request($method);
 
-        // Second three: save values in storage
-        foreach ($forLoads as $index => $collectionItem) {
-            if (!is_object($collectionItem)) {
+        // Third step: get identifiers from loads data
+        $loadsIdentifiers = array();
+        foreach ($forLoads as $index => $item) {
+            if (!is_object($item)) {
                 throw new \RuntimeException(sprintf(
-                    'The object at index "%s" in response collection must be a object, but "%s" given.',
+                    'The loads value at index "%s" must be a object, but "%s" given.',
                     $index,
-                    is_object($collectionItem) ? get_class($collectionItem) : gettype($collectionItem)
+                    gettype($item)
                 ));
             }
 
-            $identifier = ReflectionHelper::getIdentifierValue($this->reader, $collectionItem);
+            $identifier = ReflectionHelper::getIdentifierValue($this->reader, $item);
+            $loadsIdentifiers[$identifier] = $index;
+        }
 
-            if (null !== $identifier) {
+        // Fourth three: save values in storage
+        $saves = array();
+        foreach ($forLoadsIndexes as $index => $identifier) {
+            $loadIndex = $loadsIdentifiers[$identifier];
+
+            if (isset($forLoads[$loadIndex])) {
+                $collectionItem = clone $forLoads[$loadIndex];
                 $cacheKey = $this->generateCacheKey($method, $identifier);
-                $this->cache->set($cacheKey, $collectionItem, $cacheTtl);
-                $collection[$index] = $collectionItem;
-            } else {
-                $collection[$index] = $collectionItem;
+
+                if (!in_array($identifier, $saves)) {
+                    $this->cache->set($cacheKey, $collectionItem, $cacheTtl);
+                    $saves[] = $identifier;
+                }
+
+                ReflectionHelper::mergeObject($collection[$index], $collectionItem);
             }
         }
 

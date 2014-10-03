@@ -36,9 +36,7 @@ class AccountCollection extends Collection
 
         foreach ($this->storage as $account) {
             foreach ($account->tanks as $accountTank) {
-                $tank = $accountTank->tank;
-
-                $collection[$tank->id] = $tank;
+                $collection[] = $accountTank->tank;
             }
         }
 

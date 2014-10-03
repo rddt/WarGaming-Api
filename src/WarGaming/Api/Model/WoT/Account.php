@@ -11,6 +11,7 @@
 
 namespace WarGaming\Api\Model\WoT;
 
+use WarGaming\Api\Model\Collection;
 use WarGaming\Api\Annotation\Id;
 use WarGaming\Api\Util\DateTime;
 
@@ -44,24 +45,16 @@ class Account
     public $role;
 
     /**
-     * @var array|AccountTank[]
+     * @var Collection|AccountTank[]
      */
-    public $tanks = array();
+    public $tanks;
 
     /**
-     * Get tanks instances
-     *
-     * @return array|Tank\Tank[]
+     * Construct
      */
-    public function getTankInstances()
+    public function __construct()
     {
-        $tankObjects = array();
-
-        foreach ($this->tanks as $tank) {
-            $tankObjects[] = $tank->tank;
-        }
-
-        return $tankObjects;
+        $this->tanks = new Collection();
     }
 
     /**

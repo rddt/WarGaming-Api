@@ -20,6 +20,11 @@ use Doctrine\Common\Annotations\Reader;
 class ReflectionHelper
 {
     /**
+     * @var array|\ReflectionProperty[]
+     */
+    private static $identifierPropertyReflections = array();
+
+    /**
      * Get properties from reflection class or object
      *
      * @param \ReflectionObject|\ReflectionClass $reflection
@@ -75,22 +80,57 @@ class ReflectionHelper
      */
     public static function getIdentifierValue(Reader $reader, $object)
     {
-        $reflection = new \ReflectionObject($object);
-        $properties = ReflectionHelper::getProperties($reflection);
+        $class = get_class($object);
 
-        foreach ($properties as $property) {
-            $annotation = $reader->getPropertyAnnotation($property, 'WarGaming\Api\Annotation\Id');
+        if (!isset(self::$identifierPropertyReflections[$class])) {
+            self::$identifierPropertyReflections[$class] = null;
 
-            if ($annotation) {
-                // Annotation exists. This is a identifier value
-                if (!$property->isPublic()) {
-                    $property->setAccessible(true);
+            $reflection = new \ReflectionObject($object);
+            $properties = ReflectionHelper::getProperties($reflection);
+
+            foreach ($properties as $property) {
+                $annotation = $reader->getPropertyAnnotation($property, 'WarGaming\Api\Annotation\Id');
+
+                if ($annotation) {
+                    // Annotation exists. This is a identifier value
+                    if (!$property->isPublic()) {
+                        $property->setAccessible(true);
+                    }
+
+                    self::$identifierPropertyReflections[$class] = $property;
+
+                    return $property->getValue($object);
                 }
-
-                return $property->getValue($object);
             }
         }
 
+        if (!empty(self::$identifierPropertyReflections[$class])) {
+            return self::$identifierPropertyReflections[$class]->getValue($object);
+        }
+
         return null;
+    }
+
+    /**
+     * Merge objects
+     *
+     * @param object $target
+     * @param object $source
+     *
+     * @throws \InvalidArgumentException
+     */
+    public static function mergeObject($target, $source)
+    {
+        if (get_class($target) != get_class($source)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Invalid source object. Target object: "%s"; Source object: "%s"',
+                get_class($target),
+                get_class($source)
+            ));
+        }
+
+        foreach ($source as $key => $value) {
+            $target->{$key} = $value;
+        }
     }
 }

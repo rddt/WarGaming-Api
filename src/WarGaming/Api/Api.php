@@ -19,6 +19,7 @@ use WarGaming\Api\Method\WoT\Encyclopedia\TankInfo;
 use WarGaming\Api\Method\WoT\GlobalWar\Clans;
 use WarGaming\Api\Method\WoT\GlobalWar\Maps;
 use WarGaming\Api\Model\Collection;
+use WarGaming\Api\Model\WoT\AccountCollection;
 use WarGaming\Api\Model\WoT\ClanCollection;
 
 /**
@@ -183,5 +184,25 @@ class Api
         $method->tanks = $tanks;
 
         $this->clientCollectionCacheLoader->request($method);
+    }
+
+    /**
+     * Load tanks info for accounts
+     *
+     * @param AccountCollection|\WarGaming\Api\Model\WoT\Account[] $accounts
+     */
+    public function loadTanksInfoForAccounts(AccountCollection $accounts)
+    {
+        $tanks = $accounts->getTanks();
+
+        $this->loadTanksInfo($tanks);
+
+        foreach ($accounts as $account) {
+            foreach ($account->tanks as $accountTank) {
+                if (isset($tanks[$accountTank->tank->id])) {
+                    $accountTank->tank = $tanks[$accountTank->tank->id];
+                }
+            }
+        }
     }
 }
