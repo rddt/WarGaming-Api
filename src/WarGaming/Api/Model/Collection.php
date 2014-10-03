@@ -38,6 +38,8 @@ class Collection implements \Iterator, \ArrayAccess, \Countable, \Serializable
      *
      * @param array|\Iterator $data
      *
+     * @return Collection
+     *
      * @throws \InvalidArgumentException
      */
     public function merge($data)
@@ -52,12 +54,16 @@ class Collection implements \Iterator, \ArrayAccess, \Countable, \Serializable
         foreach ($data as $key => $value) {
             $this->storage[$key] = $value;
         }
+
+        return $this;
     }
 
     /**
      * Add items to collection
      *
      * @param array|\Traversable $data
+     *
+     * @return Collection
      *
      * @throws \InvalidArgumentException
      */
@@ -73,6 +79,20 @@ class Collection implements \Iterator, \ArrayAccess, \Countable, \Serializable
         foreach ($data as $value) {
             $this->storage[] = $value;
         }
+
+        return $this;
+    }
+
+    /**
+     * Clear collection
+     *
+     * @return Collection
+     */
+    public function clear()
+    {
+        $this->storage = array();
+
+        return $this;
     }
 
     /**
@@ -96,7 +116,11 @@ class Collection implements \Iterator, \ArrayAccess, \Countable, \Serializable
      */
     public function offsetSet($offset, $value)
     {
-        $this->storage[$offset] = $value;
+        if (null === $offset) {
+            $this->storage[] = $value;
+        } else {
+            $this->storage[$offset] = $value;
+        }
     }
 
     /**

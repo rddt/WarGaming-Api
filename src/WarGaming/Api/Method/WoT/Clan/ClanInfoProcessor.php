@@ -45,8 +45,10 @@ class ClanInfoProcessor extends AbstractProcessor
 
             $clanInfoId = $clanInfo['clan_id'];
 
-            if (isset($processClans[$clanInfoId])) {
-                $processClans[$clanInfoId]->setFullDataFromArray($clanInfo);
+            foreach ($processClans as $clan) {
+                if ($clan->id == $clanInfoId) {
+                    $clan->setFullDataFromArray($clanInfo);
+                }
             }
         }
     }

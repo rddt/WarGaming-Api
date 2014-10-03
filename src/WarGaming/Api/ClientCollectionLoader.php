@@ -74,9 +74,16 @@ class ClientCollectionLoader
             $propertyReflection->setAccessible(true);
         }
 
-        $values = $propertyReflection->getValue($method);
+        $collection = $propertyReflection->getValue($method);
 
-        if (count($values) <= $countAnnotation->max) {
+        if (!$collection instanceof Collection) {
+            throw new \RuntimeException(sprintf(
+                'The value for property "%s" must be Collection instance, but "%s" given.',
+                is_object($collection) ? get_class($collection) : gettype($collection)
+            ));
+        }
+
+        if (count($collection) <= $countAnnotation->max) {
             // Not exceeded the limit. Use default.
             $this->client->request($method);
         }
@@ -86,7 +93,7 @@ class ClientCollectionLoader
         $groups = array();
         $countInGroup = 0;
 
-        foreach ($values as $index => $value) {
+        foreach ($collection as $index => $value) {
             $groupValues[$index] = $value;
             $countInGroup++;
 
@@ -101,9 +108,13 @@ class ClientCollectionLoader
             $groups[] = $groupValues;
         }
 
+        $collection->clear();
+
         foreach ($groups as $group) {
             $propertyReflection->setValue($method, $group);
             $this->client->request($method);
+
+            $collection->addCollection($group);
         }
     }
 
