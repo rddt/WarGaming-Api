@@ -165,7 +165,7 @@ class ChainCache implements CacheInterface
     private function sortCaches()
     {
         if (null === $this->sortedCaches) {
-            uasort($this->caches, function ($a, $b){
+            uasort($this->caches, function ($a, $b) {
                 if ($a['priority'] == $b['priority']) {
                     return 0;
                 }

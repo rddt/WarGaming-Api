@@ -126,7 +126,8 @@ class ApplicationIdFactory implements ApplicationIdFactoryInterface
         $minUTime = min($this->useApplicationIds[$applicationId]);
 
         if ($minUTime > microtime(true) - 1) {
-            return count($this->useApplicationIds[$applicationId]) < $this->applicationIds[$applicationId]['requests_per_second'];
+            $requestsPerSecond = $this->applicationIds[$applicationId]['requests_per_second'];
+            return count($this->useApplicationIds[$applicationId]) < $requestsPerSecond;
         }
 
         // Must be remove oldest hashes

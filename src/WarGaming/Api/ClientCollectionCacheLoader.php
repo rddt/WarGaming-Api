@@ -51,8 +51,11 @@ class ClientCollectionCacheLoader
      * @param Reader                 $reader
      * @param CacheInterface         $cache
      */
-    public function __construct(ClientCollectionLoader $collectionLoader, Reader $reader = null, CacheInterface $cache = null)
-    {
+    public function __construct(
+        ClientCollectionLoader $collectionLoader,
+        Reader $reader = null,
+        CacheInterface $cache = null
+    ) {
         $this->collectionLoader = $collectionLoader;
         $this->reader = $reader;
         $this->cache = $cache ?: new ArrayCache();
@@ -106,9 +109,9 @@ class ClientCollectionCacheLoader
         foreach ($collection as $index => $collectionItem) {
             if (!is_object($collectionItem)) {
                 throw new \RuntimeException(sprintf(
-                   'The object at index "%s" in request collection must be a object, but "%s" given.',
-                   $index,
-                   is_object($collectionItem) ? get_class($collectionItem) : gettype($collectionItem)
+                    'The object at index "%s" in request collection must be a object, but "%s" given.',
+                    $index,
+                    is_object($collectionItem) ? get_class($collectionItem) : gettype($collectionItem)
                 ));
             }
 

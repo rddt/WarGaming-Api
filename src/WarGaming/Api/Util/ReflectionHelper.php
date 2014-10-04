@@ -10,6 +10,7 @@
  */
 
 namespace WarGaming\Api\Util;
+
 use Doctrine\Common\Annotations\Reader;
 
 /**

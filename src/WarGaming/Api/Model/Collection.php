@@ -113,7 +113,7 @@ class Collection implements \Iterator, \ArrayAccess, \Countable, \Serializable
             return null;
         }
 
-        reset ($this->storage);
+        reset($this->storage);
         list (, $value) = each($this->storage);
 
         return $value;

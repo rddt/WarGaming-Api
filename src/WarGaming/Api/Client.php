@@ -339,7 +339,10 @@ class Client
                         );
                     }
 
-                    $this->dispatch(Events::REQUEST_COMPLETE, new Events\RequestCompleteEvent($httpRequest, $requestResponse));
+                    $this->dispatch(
+                        Events::REQUEST_COMPLETE,
+                        new Events\RequestCompleteEvent($httpRequest, $requestResponse)
+                    );
 
                     // All OK. Exit from loop.
                     if ($lastException) {
