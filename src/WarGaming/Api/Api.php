@@ -185,24 +185,4 @@ class Api
 
         $this->clientCollectionCacheLoader->request($method);
     }
-
-    /**
-     * Load tanks info for accounts
-     *
-     * @param AccountCollection|\WarGaming\Api\Model\WoT\Account[] $accounts
-     */
-    public function loadTanksInfoForAccounts(AccountCollection $accounts)
-    {
-        $tanks = $accounts->getTanks();
-
-        $this->loadTanksInfo($tanks);
-
-        foreach ($accounts as $account) {
-            foreach ($account->tanks as $accountTank) {
-                if (isset($tanks[$accountTank->tank->id])) {
-                    $accountTank->tank = $tanks[$accountTank->tank->id];
-                }
-            }
-        }
-    }
 }

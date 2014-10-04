@@ -445,7 +445,7 @@ class Client
 
             throw ExceptionFactory::requestErrorFromWarGamingResponse($json['error']);
         } elseif ($json['status'] == 'ok') {
-            if (empty($json['data'])) {
+            if (!isset($json['data'])) {
                 throw ExceptionFactory::missingKeyInResponse('data');
             }
         } else {

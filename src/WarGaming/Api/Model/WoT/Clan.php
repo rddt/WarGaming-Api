@@ -80,7 +80,7 @@ class Clan
     public $members = array();
 
     /**
-     * @var array|Province[]
+     * @var Collection|Province[]
      */
     public $provinces = array();
 
@@ -91,6 +91,24 @@ class Clan
     {
         $this->members = new Collection();
         $this->provinces = new Collection();
+    }
+
+    /**
+     * Get tanks
+     *
+     * @return Collection
+     */
+    public function getTanks()
+    {
+        $tanks = new Collection();
+
+        foreach ($this->members as $member) {
+            foreach ($member->tanks as $accountTank) {
+                $tanks[] = $accountTank->tank;
+            }
+        }
+
+        return $tanks;
     }
 
     /**

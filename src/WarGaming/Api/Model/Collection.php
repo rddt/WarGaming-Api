@@ -84,6 +84,42 @@ class Collection implements \Iterator, \ArrayAccess, \Countable, \Serializable
     }
 
     /**
+     * Sort storage with user function
+     *
+     * @param callable $callback
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function sort($callback)
+    {
+        if (!is_callable($callback)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Callback must be a callable, but "%s" given.',
+                is_object($callback) ? get_class($callback) : gettype($callback)
+            ));
+        }
+
+        uasort($this->storage, $callback);
+    }
+
+    /**
+     * Get first object from collection
+     *
+     * @return mixed
+     */
+    public function getFirstObject()
+    {
+        if (!count($this->storage)) {
+            return null;
+        }
+
+        reset ($this->storage);
+        list (, $value) = each($this->storage);
+
+        return $value;
+    }
+
+    /**
      * Clear collection
      *
      * @return Collection
@@ -160,7 +196,7 @@ class Collection implements \Iterator, \ArrayAccess, \Countable, \Serializable
      */
     public function valid()
     {
-        return (bool) $this->current();
+        return key($this->storage) !== null;
     }
 
     /**

@@ -21,6 +21,12 @@ use WarGaming\Api\Model\Collection;
  */
 class Tank
 {
+    const TYPE_HEAVY    = 'heavyTank';
+    const TYPE_MEDIUM   = 'mediumTank';
+    const TYPE_LIGHT    = 'lightTank';
+    const TYPE_SPG      = 'SPG';
+    const TYPE_AT_SPG   = 'AT-SPG';
+
     /**
      * @var int
      *
@@ -213,6 +219,56 @@ class Tank
         $this->guns = new Collection();
         $this->radios = new Collection();
         $this->turrets = new Collection();
+    }
+
+    /**
+     * Is heavy tank
+     *
+     * @return bool
+     */
+    public function isHeavy()
+    {
+        return $this->type === self::TYPE_HEAVY;
+    }
+
+    /**
+     * Is medium
+     *
+     * @return bool
+     */
+    public function isMedium()
+    {
+        return $this->type === self::TYPE_MEDIUM;
+    }
+
+    /**
+     * Is light
+     *
+     * @return bool
+     */
+    public function isLight()
+    {
+        return $this->type === self::TYPE_LIGHT;
+    }
+
+    /**
+     * Is SPG
+     *
+     * @return bool
+     */
+    public function isSpg()
+    {
+        return $this->type === self::TYPE_SPG;
+    }
+
+    /**
+     * Is AT-SPG
+     *
+     * @return bool
+     */
+    public function isAtSpg()
+    {
+        return $this->type === self::TYPE_AT_SPG;
     }
 
     /**
