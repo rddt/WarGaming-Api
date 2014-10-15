@@ -44,6 +44,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class Client
 {
+    const API_HOST_BASE = 'api.worldoftanks.';
     const DEFAULT_HOST = 'api.worldoftanks.ru';
 
     /**
@@ -85,6 +86,11 @@ class Client
      * @var string
      */
     private $apiHost;
+
+    /**
+     * @var string
+     */
+    private $apiRegion = 'RU';
 
     /**
      * Use SSL
@@ -221,13 +227,101 @@ class Client
     }
 
     /**
-     * Get request host (Production or testing)
+     * Set request host
+     *
+     * @param string $host
+     *
+     * @return Client
+     */
+    public function setRequestHost($host)
+    {
+        $this->apiHost = $host;
+
+        return $this;
+    }
+
+    /**
+     * Get request host
      *
      * @return string
      */
     public function getRequestHost()
     {
-        return self::DEFAULT_HOST;
+        return $this->apiHost;
+    }
+
+    /**
+     * Set request secure
+     *
+     * @param string $secure
+     *
+     * @return Client
+     */
+    public function setRequestSecure($secure)
+    {
+        $this->apiSecure = $secure;
+
+        return $this;
+    }
+
+    /**
+     * Get request secure
+     *
+     * @return string
+     */
+    public function getRequestSecure()
+    {
+        return $this->apiSecure;
+    }
+
+    /**
+     * Set request region
+     *
+     * @param string $region
+     *
+     * @return Client
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function setRegion($region)
+    {
+        switch ($region) {
+            case 'EU':
+                $extension = 'eu';
+                break;
+            case 'NA':
+                $extension = 'com';
+                break;
+            case 'ASIA':
+                $extension = 'asia';
+                break;
+            case 'KR':
+                $extension = 'kr';
+                break;
+            case 'RU':
+                $extension = 'ru';
+                break;
+            default:
+                throw new \InvalidArgumentException(sprintf(
+                    'The first parameter must be EU, NA, ASIA, KR or RU but "%s" given.',
+                    $region
+                ));
+        }
+
+        $this->apiHost = self::API_HOST_BASE . $extension;
+        $this->apiRegion = $region;
+
+        return $this;
+    }
+
+    /**
+     * Get request region
+     *
+     * @return string
+     */
+    public function getRegion()
+    {
+        return $this->apiRegion;
     }
 
     /**
@@ -457,7 +551,6 @@ class Client
 
         return $json;
     }
-
 
     /**
      * Dispatch event
