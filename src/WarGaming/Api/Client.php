@@ -44,13 +44,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class Client
 {
-    const HOST                = 'api.worldoftanks';
+    const HOST                  = 'api.worldoftanks';
 
-    const REGION_KOREA        = 'kr';
-    const REGION_NORTHAMERICA = 'com';
-    const REGION_RUSSIA       = 'ru';
-    const REGION_EUROPE       = 'eu';
-    const REGION_ASIA         = 'asia';
+    const REGION_KOREA          = 'kr';
+    const REGION_NORTH_AMERICA  = 'com';
+    const REGION_RUSSIA         = 'ru';
+    const REGION_EUROPE         = 'eu';
+    const REGION_ASIA           = 'asia';
 
     /**
      * @var GuzzleClient
@@ -398,17 +398,15 @@ class Client
      *
      * @return array
      */
-    private function getAvailableRegions()
+    public static  function getAvailableRegions()
     {
-        $availableRegions = array(
-            self::REGION_NORTHAMERICA,
+        return array(
+            self::REGION_NORTH_AMERICA,
             self::REGION_KOREA,
             self::REGION_EUROPE,
             self::REGION_ASIA,
             self::REGION_RUSSIA
         );
-
-        return ($availableRegions);
     }
 
     /**

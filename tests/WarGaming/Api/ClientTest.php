@@ -72,17 +72,17 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             array(null, null, false, 'api.worldoftanks.ru', false),
             array('foo-tanks', null, false, 'foo-tanks.ru', false),
             array('foo-tanks', 'asia', false, 'foo-tanks.asia', false),
-            array('foo.com', null, false, 'foo.com.ru', false),
-            array('foo.com', null, true, 'foo.com', false),
+            array('foo.bar', null, false, 'foo.bar.ru', false),
+            array('foo.bar', null, true, 'foo.bar', false),
 
-            array('foo.com', 'kr', false, 'foo.com.kr', false),
-            array('foo.com', 'na', false, 'foo.com.na', false),
-            array('foo.com', 'eu', false, 'foo.com.eu', false),
-            array('foo.com', 'ru', false, 'foo.com.ru', false),
-            array('foo.com', 'AsIa', false, 'foo.com.asia', false),
+            array('foo.bar', 'kr', false, 'foo.bar.kr', false),
+            array('foo.bar', 'com', false, 'foo.bar.com', false),
+            array('foo.bar', 'eu', false, 'foo.bar.eu', false),
+            array('foo.bar', 'ru', false, 'foo.bar.ru', false),
+            array('foo.bar', 'AsIa', false, 'foo.bar.asia', false),
 
             // Invalid data
-            array('foo.com', 'foo', true, null, true)
+            array('foo.bar', 'foo', true, null, true)
         );
     }
 }
