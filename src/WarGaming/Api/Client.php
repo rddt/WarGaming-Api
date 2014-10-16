@@ -44,13 +44,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class Client
 {
-    const HOST         = 'api.worldoftanks';
+    const HOST                = 'api.worldoftanks';
 
-    const REGION_KOREA      = 'kr';
-    const REGION_NAMIBIA    = 'na';
-    const REGION_RUSSIA     = 'ru';
-    const REGION_EUROPE     = 'eu';
-    const REGION_ASIA       = 'asia';
+    const REGION_KOREA        = 'kr';
+    const REGION_NORTHAMERICA = 'com';
+    const REGION_RUSSIA       = 'ru';
+    const REGION_EUROPE       = 'eu';
+    const REGION_ASIA         = 'asia';
 
     /**
      * @var GuzzleClient
@@ -265,13 +265,7 @@ class Client
         $parts = explode('.', $host);
         $zone = $parts[count($parts) - 1];
 
-        $availableZones = array(
-            self::REGION_RUSSIA,
-            self::REGION_ASIA,
-            self::REGION_EUROPE,
-            self::REGION_KOREA,
-            self::REGION_NAMIBIA
-        );
+        $availableZones = self::getAvailableRegions();
 
         if (in_array($zone, $availableZones)) {
             // Set domain zone as region
@@ -372,13 +366,7 @@ class Client
      */
     public function setRegion($region)
     {
-        $availableRegions = array(
-            self::REGION_NAMIBIA,
-            self::REGION_KOREA,
-            self::REGION_EUROPE,
-            self::REGION_ASIA,
-            self::REGION_RUSSIA
-        );
+        $availableRegions = self::getAvailableRegions();
 
         $region = strtolower($region);
 
@@ -403,6 +391,24 @@ class Client
     public function getRegion()
     {
         return $this->region;
+    }
+
+    /**
+     * Get available regions
+     *
+     * @return array
+     */
+    private function getAvailableRegions()
+    {
+        $availableRegions = array(
+            self::REGION_NORTHAMERICA,
+            self::REGION_KOREA,
+            self::REGION_EUROPE,
+            self::REGION_ASIA,
+            self::REGION_RUSSIA
+        );
+
+        return ($availableRegions);
     }
 
     /**
