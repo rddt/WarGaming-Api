@@ -44,8 +44,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class Client
 {
-    const API_HOST_BASE = 'api.worldoftanks.';
-    const DEFAULT_HOST = 'api.worldoftanks.ru';
+    const HOST         = 'api.worldoftanks';
+
+    const REGION_KOREA      = 'kr';
+    const REGION_NAMIBIA    = 'na';
+    const REGION_RUSSIA     = 'ru';
+    const REGION_EUROPE     = 'eu';
+    const REGION_ASIA       = 'asia';
 
     /**
      * @var GuzzleClient
@@ -85,12 +90,17 @@ class Client
     /**
      * @var string
      */
-    private $apiHost;
+    private $host = self::HOST;
+
+    /**
+     * @var bool
+     */
+    private $customHost = false;
 
     /**
      * @var string
      */
-    private $apiRegion = 'RU';
+    private $region = self::REGION_RUSSIA;
 
     /**
      * Use SSL
@@ -113,7 +123,8 @@ class Client
      * @param ValidatorInterface         $validator
      * @param EventDispatcherInterface   $eventDispatcher
      * @param FormDataGeneratorInterface $formDataGenerator
-     * @param string                     $apiHost
+     * @param string                     $baseHost
+     * @param string                     $region
      * @param bool                       $apiSecure
      */
     public function __construct(
@@ -121,14 +132,16 @@ class Client
         ValidatorInterface $validator,
         EventDispatcherInterface $eventDispatcher,
         FormDataGeneratorInterface $formDataGenerator,
-        $apiHost = null,
+        $baseHost = null,
+        $region = self::REGION_RUSSIA,
         $apiSecure = true
     ) {
         $this->httpClient = $httpClient;
         $this->validator = $validator;
         $this->eventDispatcher = $eventDispatcher;
         $this->formDataGenerator = $formDataGenerator;
-        $this->apiHost = $apiHost ?: self::DEFAULT_HOST;
+        $this->host = $baseHost ?: self::HOST;
+        $this->setRegion($region);
         $this->apiSecure = (bool) $apiSecure;
         $this->cache = new ArrayCache();
     }
@@ -232,10 +245,42 @@ class Client
      * @param string $host
      *
      * @return Client
+     *
+     * @deprecated This method is deprecated and will be removed
      */
     public function setRequestHost($host)
     {
-        $this->apiHost = $host;
+        return $this->setHost($host);
+    }
+
+    /**
+     * Set host
+     *
+     * @param string $host
+     *
+     * @return Client
+     */
+    public function setHost($host)
+    {
+        $parts = explode('.', $host);
+        $zone = $parts[count($parts) - 1];
+
+        $availableZones = array(
+            self::REGION_RUSSIA,
+            self::REGION_ASIA,
+            self::REGION_EUROPE,
+            self::REGION_KOREA,
+            self::REGION_NAMIBIA
+        );
+
+        if (in_array($zone, $availableZones)) {
+            // Set domain zone as region
+            $this->setRegion($zone);
+            array_pop($parts); // Remove last element
+            $this->host = implode('.', $parts);
+        } else {
+            $this->host = $host;
+        }
 
         return $this;
     }
@@ -244,10 +289,40 @@ class Client
      * Get request host
      *
      * @return string
+     *
+     * @throws \RuntimeException
      */
     public function getRequestHost()
     {
-        return $this->apiHost;
+        if ($this->customHost) {
+            return $this->host;
+        }
+
+        return $this->host . '.' . $this->region;
+    }
+
+    /**
+     * Set flag for use custom host
+     *
+     * @param bool $customHost
+     *
+     * @return Client
+     */
+    public function setCustomHost($customHost)
+    {
+        $this->customHost = (bool) $customHost;
+
+        return $this;
+    }
+
+    /**
+     * Is use custom host
+     *
+     * @return bool
+     */
+    public function isCustomHost()
+    {
+        return $this->customHost;
     }
 
     /**
@@ -259,15 +334,27 @@ class Client
      */
     public function setRequestSecure($secure)
     {
-        $this->apiSecure = $secure;
+        $this->apiSecure = (bool) $secure;
 
         return $this;
     }
 
     /**
+     * Is use request secure
+     *
+     * @return bool
+     */
+    public function isRequestSecure()
+    {
+        return $this->apiSecure;
+    }
+
+    /**
      * Get request secure
      *
-     * @return string
+     * @return bool
+     *
+     * @deprecated This method is deprecated and will be removed. Please use Client::isRequestSecure
      */
     public function getRequestSecure()
     {
@@ -285,31 +372,25 @@ class Client
      */
     public function setRegion($region)
     {
-        switch ($region) {
-            case 'EU':
-                $extension = 'eu';
-                break;
-            case 'NA':
-                $extension = 'com';
-                break;
-            case 'ASIA':
-                $extension = 'asia';
-                break;
-            case 'KR':
-                $extension = 'kr';
-                break;
-            case 'RU':
-                $extension = 'ru';
-                break;
-            default:
-                throw new \InvalidArgumentException(sprintf(
-                    'The first parameter must be EU, NA, ASIA, KR or RU but "%s" given.',
-                    $region
-                ));
-        }
+        $availableRegions = array(
+            self::REGION_NAMIBIA,
+            self::REGION_KOREA,
+            self::REGION_EUROPE,
+            self::REGION_ASIA,
+            self::REGION_RUSSIA
+        );
 
-        $this->apiHost = self::API_HOST_BASE . $extension;
-        $this->apiRegion = $region;
+        $region = strtolower($region);
+
+        if (in_array($region, $availableRegions)) {
+            $this->region = $region;
+        } else {
+            throw new \InvalidArgumentException(sprintf(
+                'The first parameter must be "%s" but "%s" given.',
+                implode('", "', $availableRegions),
+                $region
+            ));
+        }
 
         return $this;
     }
@@ -321,7 +402,7 @@ class Client
      */
     public function getRegion()
     {
-        return $this->apiRegion;
+        return $this->region;
     }
 
     /**
@@ -375,7 +456,7 @@ class Client
         $httpRequest = $processor->createRequest($this->httpClient, $method);
 
         // Set host and scheme to uri
-        $httpRequest->setHost($this->apiHost);
+        $httpRequest->setHost($this->getRequestHost());
         $httpRequest->setScheme($this->apiSecure ? 'https' : 'http');
 
         // Set language

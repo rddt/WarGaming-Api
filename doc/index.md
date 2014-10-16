@@ -3,6 +3,9 @@ WarGaming API Documentation
 
 Before send API request to WarGaming server, your must create client and configure it.
 
+Create API Client
+-----------------
+
 Base create API client:
 
 ```php
@@ -14,6 +17,25 @@ $client = Client::createDefault();
 $applicationId = '...';
 $client->setApplicationId($applicationId);
 ```
+
+And your can configure host, SSL, default language and region for client:
+
+```php
+$client
+    ->setRegion(Client::REGION_RUSSIA) // Please see Client::REGION_* constants for available regions
+    ->setRequestSecure(true) // If use SSL for connection
+    ->setDefaultLanguage('ru')
+;
+
+// Attention: change the host is a dangerous operation
+$client
+    ->setHost('custom-host.com')
+    ->setCustomHost(true) // If you can use custom host.
+;
+```
+
+Use client
+----------
 
 After create client, your can send any methods.
 
