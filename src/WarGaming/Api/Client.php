@@ -44,7 +44,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class Client
 {
-    const HOST                  = 'api.worldoftanks';
+    const API_SUBDOMAIN         = 'api';
+
+    const TANKS                 = 'worldoftanks';
+    const PLANES                = 'worldofwarplanes';
 
     const REGION_KOREA          = 'kr';
     const REGION_NORTH_AMERICA  = 'com';
@@ -90,7 +93,12 @@ class Client
     /**
      * @var string
      */
-    private $host = self::HOST;
+    private $apiMode;
+
+    /**
+     * @var string
+     */
+    private $host;
 
     /**
      * @var bool
@@ -100,7 +108,7 @@ class Client
     /**
      * @var string
      */
-    private $region = self::REGION_RUSSIA;
+    private $region;
 
     /**
      * Use SSL
@@ -132,16 +140,20 @@ class Client
         ValidatorInterface $validator,
         EventDispatcherInterface $eventDispatcher,
         FormDataGeneratorInterface $formDataGenerator,
-        $baseHost = null,
-        $region = self::REGION_RUSSIA,
+        $host = null,
+        $region = null,
         $apiSecure = true
     ) {
         $this->httpClient = $httpClient;
         $this->validator = $validator;
         $this->eventDispatcher = $eventDispatcher;
         $this->formDataGenerator = $formDataGenerator;
-        $this->host = $baseHost ?: self::HOST;
-        $this->setRegion($region);
+        if (!is_null($region)) {
+            $this->setRegion($region);
+        }
+        if (!is_null($host)) {
+            $this->setHost($host);
+        }
         $this->apiSecure = (bool) $apiSecure;
         $this->cache = new ArrayCache();
     }
@@ -262,19 +274,7 @@ class Client
      */
     public function setHost($host)
     {
-        $parts = explode('.', $host);
-        $zone = $parts[count($parts) - 1];
-
-        $availableZones = self::getAvailableRegions();
-
-        if (in_array($zone, $availableZones)) {
-            // Set domain zone as region
-            $this->setRegion($zone);
-            array_pop($parts); // Remove last element
-            $this->host = implode('.', $parts);
-        } else {
-            $this->host = $host;
-        }
+        $this->host = $host;
 
         return $this;
     }
@@ -288,11 +288,7 @@ class Client
      */
     public function getRequestHost()
     {
-        if ($this->customHost) {
-            return $this->host;
-        }
-
-        return $this->host . '.' . $this->region;
+        return $this->host;
     }
 
     /**
@@ -366,12 +362,24 @@ class Client
      */
     public function setRegion($region)
     {
+        $this->customHost = false;
+
+        $availableApiModes = self::getAvailableApiModes();
+
+        if (!isset($this->apiMode)) {
+            throw new \InvalidArgumentException(sprintf(
+                'The apiMode parameter must be set to "%s".',
+                implode('", "', $availableApiModes)
+            ));
+        }
+
         $availableRegions = self::getAvailableRegions();
 
         $region = strtolower($region);
 
         if (in_array($region, $availableRegions)) {
             $this->region = $region;
+            $this->setHost(self::API_SUBDOMAIN . '.' . $this->apiMode . '.' . $this->region);
         } else {
             throw new \InvalidArgumentException(sprintf(
                 'The first parameter must be "%s" but "%s" given.',
@@ -398,7 +406,7 @@ class Client
      *
      * @return array
      */
-    public static  function getAvailableRegions()
+    public static function getAvailableRegions()
     {
         return array(
             self::REGION_NORTH_AMERICA,
@@ -407,6 +415,44 @@ class Client
             self::REGION_ASIA,
             self::REGION_RUSSIA
         );
+    }
+
+    /**
+     * Get available api modes
+     *
+     * @return array
+     */
+    public static function getAvailableApiModes()
+    {
+        return array(
+            self::TANKS,
+            self::PLANES
+        );
+    }
+
+    /**
+     * Set api mode
+     *
+     * @param string $apimode
+     *
+     * @return Client
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function setApiMode($apiMode)
+    {
+        $availableApiModes = self::getAvailableApiModes();
+
+        if (in_array($apiMode, $availableApiModes)) {
+            $this->apiMode = $apiMode;
+        } else {
+            throw new \InvalidArgumentException(sprintf(
+                'The first parameter must be set to "%s" but "%s" given.',
+                implode('", "', $availableApiModes),
+                $apiMode
+            ));
+        }
+        return $this;
     }
 
     /**
