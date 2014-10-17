@@ -298,11 +298,13 @@ class Client
      *
      * @return Client
      */
-    public function setCustomHost($customHost)
+    public function setCustomHost($host)
     {
         $this->region = null;
-        $this->customHost = (bool) true;
-        $this->host = $customHost;
+
+        $this->customHost = true;
+
+        $this->host = $host;
 
         return $this;
     }
@@ -364,7 +366,7 @@ class Client
      */
     public function setRegion($region)
     {
-        $this->customHost = (bool) false;
+        $this->customHost = false;
 
         $availableApiModes = self::getAvailableApiModes();
 
