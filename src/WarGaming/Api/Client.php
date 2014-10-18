@@ -101,11 +101,6 @@ class Client
     private $host;
 
     /**
-     * @var bool
-     */
-    private $customHost = false;
-
-    /**
      * @var string
      */
     private $region;
@@ -272,7 +267,7 @@ class Client
      *
      * @return Client
      */
-    private function setHost($host)
+    public function setHost($host)
     {
         $this->host = $host;
 
@@ -287,34 +282,6 @@ class Client
     public function getRequestHost()
     {
         return $this->host;
-    }
-
-    /**
-     * Set a custom hostname
-     *
-     * @param string $customHost
-     *
-     * @return Client
-     */
-    public function setCustomHost($host)
-    {
-        $this->region = null;
-
-        $this->customHost = true;
-
-        $this->host = $host;
-
-        return $this;
-    }
-
-    /**
-     * Is use custom host
-     *
-     * @return bool
-     */
-    public function isCustomHost()
-    {
-        return $this->customHost;
     }
 
     /**
@@ -364,26 +331,15 @@ class Client
      */
     public function setRegion($region)
     {
-        $this->customHost = false;
-
-        $availableApiModes = self::getAvailableApiModes();
-
-        $apiMode = $this->getApiMode();
-
-        if (is_null($apiMode)) {
-            throw new \InvalidArgumentException(sprintf(
-                'The apiMode parameter must be set to "%s".',
-                implode('", "', $availableApiModes)
-            ));
-        }
-
         $availableRegions = self::getAvailableRegions();
 
         $region = strtolower($region);
 
+        $apiMode = $this->getApiMode();
+
         if (in_array($region, $availableRegions)) {
             $this->region = $region;
-            $this->setHost(self::API_SUBDOMAIN . '.' . $this->apiMode . '.' . $this->region);
+            $this->setHost(self::API_SUBDOMAIN . '.' . $apiMode . '.' . $region);
         } else {
             throw new \InvalidArgumentException(sprintf(
                 'The first parameter must be "%s" but "%s" given.',
@@ -438,9 +394,21 @@ class Client
      * Get api mode
      *
      * @return string
+     *
+     * @throws \InvalidArgumentException
      */
     public function getApiMode()
     {
+        $availableApiModes = self::getAvailableApiModes();
+
+        if (is_null($this->apiMode) or !in_array($this->apiMode, $availableApiModes)) {
+            throw new \InvalidArgumentException(sprintf(
+                'The apiMode parameter must be set to "%s" but "%s" given.',
+                implode('", "', $availableApiModes),
+                $this->apiMode
+            ));
+        }
+
         return $this->apiMode;
     }
 
