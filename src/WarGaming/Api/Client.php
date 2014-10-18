@@ -93,7 +93,7 @@ class Client
     /**
      * @var string
      */
-    private $apiMode;
+    private $apiMode = null;
 
     /**
      * @var string
@@ -283,8 +283,6 @@ class Client
      * Get request host
      *
      * @return string
-     *
-     * @throws \RuntimeException
      */
     public function getRequestHost()
     {
@@ -370,7 +368,9 @@ class Client
 
         $availableApiModes = self::getAvailableApiModes();
 
-        if (!isset($this->apiMode)) {
+        $apiMode = $this->getApiMode();
+
+        if (is_null($apiMode)) {
             throw new \InvalidArgumentException(sprintf(
                 'The apiMode parameter must be set to "%s".',
                 implode('", "', $availableApiModes)
@@ -435,6 +435,16 @@ class Client
     }
 
     /**
+     * Get api mode
+     *
+     * @return string
+     */
+    public function getApiMode()
+    {
+        return $this->apiMode;
+    }
+
+    /**
      * Set api mode
      *
      * @param string $apimode
@@ -456,6 +466,7 @@ class Client
                 $apiMode
             ));
         }
+
         return $this;
     }
 
