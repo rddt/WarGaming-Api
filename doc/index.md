@@ -18,19 +18,29 @@ $applicationId = '...';
 $client->setApplicationId($applicationId);
 ```
 
-And your can configure host, SSL, default language and region for client:
+Client requires a valid: applicationId, apiMode and region to operate.
+
+apiMode must come before region.
+
+`setRegion` will cause the client to the official wargaming api host for the specified apiMode and region.
+
+You can configure: apimode, region, SSL and default language for the client:
 
 ```php
 $client
+    ->setApiMode(Client::TANKS) // Constants Client::TANKS and Client::PLANES supported
     ->setRegion(Client::REGION_RUSSIA) // Please see Client::REGION_* constants for available regions
-    ->setRequestSecure(true) // If use SSL for connection
+    ->setRequestSecure(true) // Use SSL for connection
     ->setDefaultLanguage('ru')
 ;
+```
+If you need to use an api host that does not conform to the expected format: `api.apimode.region` (eg: `api.worldoftanks.ru`)
+then use setHost to specify a custom host and do not use setRegion.
 
-// Attention: change the host is a dangerous operation
+```php
+// Attention: setting the host directly is an unsupported operation.
 $client
-    ->setHost('custom-host.com')
-    ->setCustomHost(true) // If you can use custom host.
+    ->setHost('custom-host.example.com')
 ;
 ```
 

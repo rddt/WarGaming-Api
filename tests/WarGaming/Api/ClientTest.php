@@ -19,19 +19,24 @@ namespace WarGaming\Api;
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * Test change request host and region
+     * Test set api mode, set region and set host
      *
-     * @dataProvider providerChangeRequestHostAndRegion
+     * @dataProvider providerSetApiModeAndSetRegion
      *
-     * @param string $baseHost
+     * @param string $apiMode
      * @param string $region
-     * @param bool   $customHost
+     * @param bool   $host
      * @param string $expected
+     * @param bool   $apiModeIsInvalid
      * @param bool   $regionIsInvalid
      */
-    public function testChangeRequestHostAndRegion($baseHost, $region, $customHost, $expected, $regionIsInvalid)
+    public function testSetApiModeAndSetRegion($apiMode, $region, $host, $expected, $apiModeIsInvalid, $regionIsInvalid)
     {
         if ($regionIsInvalid) {
+            $this->setExpectedException('InvalidArgumentException');
+        }
+
+        if ($apiModeIsInvalid) {
             $this->setExpectedException('InvalidArgumentException');
         }
 
@@ -45,15 +50,17 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             false
         );
 
-        if (null !== $baseHost) {
-            $client->setHost($baseHost);
+        if (null !== $apiMode) {
+            $client->setApiMode($apiMode);
+        }
+
+        if (null !== $host) {
+            $client->setHost($host);
         }
 
         if (null !== $region) {
             $client->setRegion($region);
         }
-
-        $client->setCustomHost($customHost);
 
         $requestHost = $client->getRequestHost();
 
@@ -61,28 +68,42 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Data provider for testing change request host and region
+     * Data provider for testing set api mode, set region and set host
      *
      * @return array
      */
-    public function providerChangeRequestHostAndRegion()
+    public function providerSetApiModeAndSetRegion()
     {
         return array(
             // Correct data
-            array(null, null, false, 'api.worldoftanks.ru', false),
-            array('foo-tanks', null, false, 'foo-tanks.ru', false),
-            array('foo-tanks', 'asia', false, 'foo-tanks.asia', false),
-            array('foo.bar', null, false, 'foo.bar.ru', false),
-            array('foo.bar', null, true, 'foo.bar', false),
+            array(Client::TANKS, Client::REGION_KOREA, null, 'api.worldoftanks.kr', false, false),
+            array(Client::TANKS, Client::REGION_NORTH_AMERICA, null, 'api.worldoftanks.com', false, false),
+            array(Client::TANKS, Client::REGION_RUSSIA, null, 'api.worldoftanks.ru', false, false),
+            array(Client::TANKS, Client::REGION_EUROPE, null, 'api.worldoftanks.eu', false, false),
+            array(Client::TANKS, Client::REGION_ASIA, null, 'api.worldoftanks.asia', false, false),
 
-            array('foo.bar', 'kr', false, 'foo.bar.kr', false),
-            array('foo.bar', 'com', false, 'foo.bar.com', false),
-            array('foo.bar', 'eu', false, 'foo.bar.eu', false),
-            array('foo.bar', 'ru', false, 'foo.bar.ru', false),
-            array('foo.bar', 'AsIa', false, 'foo.bar.asia', false),
+            array(Client::PLANES, Client::REGION_KOREA, null, 'api.worldofwarplanes.kr', false, false),
+            array(Client::PLANES, Client::REGION_NORTH_AMERICA, null, 'api.worldofwarplanes.com', false, false),
+            array(Client::PLANES, Client::REGION_RUSSIA, null, 'api.worldofwarplanes.ru', false, false),
+            array(Client::PLANES, Client::REGION_EUROPE, null, 'api.worldofwarplanes.eu', false, false),
+            array(Client::PLANES, Client::REGION_ASIA, null, 'api.worldofwarplanes.asia', false, false),
+
+            // Valid apimode and setting a custom host
+            array(Client::TANKS, null, 'example.com', 'example.com', false, false),
+            array(Client::PLANES, null, 'example.ru', 'example.ru', false, false),
 
             // Invalid data
-            array('foo.bar', 'foo', true, null, true)
+            // Invalid apimode and invalid region
+            array('invalid_api_mode', 'invalid_region', null, 'api.worldoftanks.ru', true, true),
+            // Invalid apimode and no region
+            array('invalid_api_mode', null, null, 'api.worldoftanks.ru', true, false),
+            // Invalid apimode with valid region
+            array('invalid_api_mode', Client::REGION_RUSSIA, null, 'api.worldoftanks.ru', true, false),
+            // Invalid apimode, no region and setting a custom host
+            array('invalid_api_mode', null, 'api.worldoftanks.ru', 'api.worldoftanks.ru', true, false),
+            // Invalid region and no custom host for all apimodes
+            array(Client::TANKS, 'invalid_region', null, 'api.worldoftanks.ru', false, true),
+            array(Client::PLANES, 'invalid_region', null, 'api.worldoftanks.ru', false, true)
         );
     }
 }
