@@ -35,6 +35,7 @@ $client
     ->setDefaultLanguage('ru')
 ;
 ```
+
 If you need to use an api host that does not conform to the wargaming expected format:
 `api.apimode.region` (example: `api.worldoftanks.ru`)
 then use the `setHost` method to specify a custom host and do not use `setRegion`.

@@ -415,7 +415,7 @@ class Client
     /**
      * Set api mode
      *
-     * @param string $apimode
+     * @param string $apiMode
      *
      * @return Client
      *
