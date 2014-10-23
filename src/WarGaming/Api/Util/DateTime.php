@@ -30,4 +30,19 @@ class DateTime
 
         return $datetime;
     }
+
+    /**
+     * Create date time from primetime hour
+     *
+     * @param int $hour
+     *
+     * @return \DateTime
+     */
+    public static function dateTimeFromPrimeTime($hour)
+    {
+        $datetime = new \DateTime();
+        $datetime->setTime($hour, 0);
+
+        return $datetime;
+    }
 }
