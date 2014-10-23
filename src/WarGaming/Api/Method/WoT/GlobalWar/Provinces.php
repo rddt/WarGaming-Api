@@ -18,7 +18,7 @@ use WarGaming\Api\Method\AbstractMethod;
 /**
  * Get returns list of provinces on the selected Global map
  *
- * @author inph
+ * @author Mike Flisher <mike.flisher@gmail.com>
  */
 class Provinces extends AbstractMethod
 {

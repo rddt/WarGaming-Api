@@ -16,7 +16,7 @@ use WarGaming\Api\Model\Collection;
 /**
  * Region collection
  *
- * @author inph
+ * @author Mike Flisher <mike.flisher@gmail.com>
  */
 class RegionCollection extends Collection
 {

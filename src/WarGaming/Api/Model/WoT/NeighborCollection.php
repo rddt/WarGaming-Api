@@ -16,7 +16,7 @@ use WarGaming\Api\Model\Collection;
 /**
  * Neighbor collection
  *
- * @author inph
+ * @author Mike Flisher <mike.flisher@gmail.com>
  */
 class NeighborCollection extends Collection
 {

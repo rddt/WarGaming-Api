@@ -16,7 +16,7 @@ use WarGaming\Api\Model\Collection;
 /**
  * Province collection
  *
- * @author inph
+ * @author Mike Flisher <mike.flisher@gmail.com>
  */
 class ProvinceCollection extends Collection
 {

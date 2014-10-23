@@ -14,7 +14,7 @@ namespace WarGaming\Api\Model\WoT;
 /**
  * Region model
  *
- * @author inph
+ * @author Mike Flisher <mike.flisher@gmail.com>
  */
 class Region
 {

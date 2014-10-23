@@ -14,7 +14,7 @@ namespace WarGaming\Api\Model\WoT;
 /**
  * Neighbor model
  *
- * @author inph
+ * @author Mike Flisher <mike.flisher@gmail.com>
  */
 class Neighbor
 {
