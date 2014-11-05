@@ -18,7 +18,7 @@ use WarGaming\Api\Util\DateTime;
 /**
  * Province model
  *
- * @author Vitaliy Zhuk <zhuk2205@gmail.com>
+ * @author Mike Flisher <mike.flisher@gmail.com>
  */
 class Province
 {

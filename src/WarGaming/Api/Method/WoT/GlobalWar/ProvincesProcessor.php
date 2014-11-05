@@ -20,7 +20,7 @@ use WarGaming\Api\Model\WoT\ProvinceCollection;
 /**
  * Get provinces API processor
  *
- * @author inph
+ * @author Mike Flisher <mike.flisher@gmail.com>
  */
 class ProvincesProcessor extends AbstractProcessor
 {
